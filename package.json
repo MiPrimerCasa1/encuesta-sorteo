@@ -1,0 +1,32 @@
+{
+  "name": "landingqr",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:api": "node server/index.js",
+    "desarrollo": "vite",
+    "desarrollo:api": "node server/index.js",
+    "build": "tsc && vite build",
+    "compilar": "tsc && vite build",
+    "preview": "vite preview",
+    "start:api": "node server/index.js",
+    "iniciar:api": "node server/index.js"
+  },
+  "devDependencies": {
+    "@rolldown/binding-win32-x64-msvc": "^1.0.0-rc.18",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.10"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.9.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "zod": "^4.4.3"
+  }
+}

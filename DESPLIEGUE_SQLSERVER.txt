@@ -1,0 +1,189 @@
+GUIA DE DESPLIEGUE - ENCUESTA MI PRIMERA CASA (SQL SERVER)
+==========================================================
+
+OBJETIVO
+--------
+Publicar la encuesta en servidor productivo y guardar respuestas en SQL Server
+de la empresa (en lugar de SQLite local).
+
+
+1) PRE-REQUISITOS
+-----------------
+- Servidor Linux o Windows con acceso a internet.
+- Node.js LTS (recomendado v20 o superior).
+- npm instalado.
+- SQL Server accesible desde el servidor (host, puerto, usuario, clave, base).
+- Dominio/subdominio para encuesta (ej: encuesta.tudominio.com).
+- HTTPS (certificado SSL).
+
+
+2) SUBIR EL PROYECTO AL SERVIDOR
+--------------------------------
+Opciones:
+- Git clone del repositorio.
+- O copiar carpeta del proyecto manualmente.
+
+En servidor:
+1. Ubicar proyecto en carpeta final (ej: /var/www/landingqr o C:\apps\landingqr).
+2. Ejecutar:
+   npm install
+
+
+3) VARIABLES DE ENTORNO (RECOMENDADO)
+-------------------------------------
+Crear archivo .env en la raiz del proyecto con datos reales de SQL Server.
+
+Ejemplo:
+DB_CLIENT=sqlserver
+DB_HOST=10.10.10.20
+DB_PORT=1433
+DB_NAME=EncuestasMPC
+DB_USER=usuario_sql
+DB_PASSWORD=clave_sql
+API_PORT=3001
+NODE_ENV=production
+
+Nota:
+- Hoy el proyecto usa SQLite en server/index.js.
+- Para SQL Server, el backend debe cambiar el driver/cliente de DB
+  (mssql o knex con dialecto mssql) y usar estas variables.
+
+
+4) CREAR TABLAS EN SQL SERVER
+-----------------------------
+Modelo dinamico recomendado:
+- sorteos
+- formularios
+- preguntas
+- respuestas
+- respuestas_detalle
+
+Ejecutar el DDL en SQL Server Management Studio (SSMS) antes de levantar API.
+
+Recomendaciones SQL Server:
+- Definir PK en cada tabla.
+- Definir FK entre tablas.
+- Indices en:
+  * respuestas(sorteo_id, codigo_promotor, created_at)
+  * respuestas_detalle(respuesta_id, pregunta_id)
+  * preguntas(formulario_id, codigo_pregunta)
+
+
+5) ADAPTAR BACKEND A SQL SERVER
+-------------------------------
+Actualmente:
+- server/index.js usa better-sqlite3 y archivo data/surveys.db.
+
+Para SQL Server:
+1. Instalar cliente:
+   npm install mssql
+2. Reemplazar consultas SQLite por consultas T-SQL.
+3. Mantener mismo contrato del endpoint POST /api/survey:
+   - participante
+   - respuestas[]
+   - idSorteo
+   - nombreSorteo
+   - codigoPromotor
+   - codigoQr
+   - mensajeWhatsapp
+   - origen
+4. Validar transaccion:
+   - insertar cabecera en respuestas
+   - insertar detalles en respuestas_detalle
+   - rollback si falla algun detalle.
+
+
+6) BUILD DE FRONTEND
+--------------------
+En servidor:
+npm run compilar
+
+Esto genera la carpeta dist/ con archivos estaticos.
+
+
+7) LEVANTAR API EN PRODUCCION (PM2)
+-----------------------------------
+Instalar PM2:
+npm install -g pm2
+
+Iniciar API:
+pm2 start server/index.js --name encuesta-api
+
+Persistir:
+pm2 save
+pm2 startup
+
+Comandos utiles:
+pm2 status
+pm2 logs encuesta-api
+pm2 restart encuesta-api
+
+
+8) PUBLICAR FRONTEND + PROXY API (NGINX)
+----------------------------------------
+Configurar Nginx:
+- / apunta a carpeta dist/
+- /api apunta a http://127.0.0.1:3001
+
+Ejemplo conceptual:
+- root /var/www/landingqr/dist;
+- location /api/ { proxy_pass http://127.0.0.1:3001; }
+
+Activar sitio, reiniciar Nginx y verificar:
+- https://encuesta.tudominio.com
+- https://encuesta.tudominio.com/api/health
+
+
+9) URL QUE ENVIA WHATSAPP
+-------------------------
+Formato recomendado:
+https://encuesta.tudominio.com/?id_sorteo=sorteo01&nombre_sorteo=Sorteo%2001&codigo_qr=sorteo01_v1&codigo_promotor=v1
+
+Minimo requerido:
+- id_sorteo
+- codigo_qr
+- codigo_promotor
+
+
+10) CHECKLIST DE VALIDACION FINAL
+---------------------------------
+[ ] Frontend abre por HTTPS.
+[ ] API responde /api/health.
+[ ] Se puede enviar encuesta desde navegador.
+[ ] Registro se guarda en SQL Server (respuestas + respuestas_detalle).
+[ ] Duplicados se controlan segun regla acordada.
+[ ] PM2 queda activo tras reinicio.
+[ ] Logs sin errores criticos.
+
+
+11) DECISIONES TECNICAS CON EL INGENIERO
+----------------------------------------
+1. Regla de deduplicacion oficial:
+   - nombre+barrio+sorteo+promotor+fecha
+   - o con identificador extra (telefono/hash) si desean mayor precision.
+2. Versionado de formularios:
+   - encuesta_base_v1, encuesta_base_v2, etc.
+3. Estrategia de reportes:
+   - por sorteo
+   - por promotor
+   - por pregunta/respuesta
+4. Backups y retencion:
+   - frecuencia de backup SQL Server
+   - politica de restauracion.
+
+
+12) MIGRACION CONTROLADA (SUGERIDA)
+-----------------------------------
+Fase 1: Staging
+- Conectar API a SQL Server de pruebas.
+- Probar 20-30 envios reales.
+
+Fase 2: Produccion piloto
+- 1 sorteo y 1-2 promotores.
+- Monitorear 24-48 hs.
+
+Fase 3: Produccion completa
+- Todos los promotores y sorteos activos.
+
+
+FIN
