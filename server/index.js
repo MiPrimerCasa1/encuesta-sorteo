@@ -1,12 +1,18 @@
 import "dotenv/config";
 import cors from "cors";
 import express from "express";
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import sql from "mssql";
 import { z } from "zod";
 
 const app = express();
-const PORT = process.env.API_PORT || 3001;
+const PORT = process.env.PORT || process.env.API_PORT || 3001;
 const SP_NAME = process.env.SP_NAME || "dbo.encuestaCargaSorteo01";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const distPath = path.resolve(__dirname, "../dist");
 
 const sqlConfig = {
   server: process.env.DB_HOST || "",
@@ -142,6 +148,15 @@ app.post("/api/survey", async (req, res) => {
   }
 });
 
+if (existsSync(distPath)) {
+  app.use(express.static(distPath));
+
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api")) return next();
+    return res.sendFile(path.join(distPath, "index.html"));
+  });
+}
+
 app.listen(PORT, () => {
-  console.log(`API de encuestas (SQL Server) ejecutandose en http://localhost:${PORT}`);
+  console.log(`App de encuestas ejecutandose en http://localhost:${PORT}`);
 });

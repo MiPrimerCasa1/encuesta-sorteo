@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "/encuesta-mi-primera-casa/",
+  base: process.env.VITE_BASE || "/",
   server: {
     proxy: {
       "/api": {

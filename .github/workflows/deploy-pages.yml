@@ -31,6 +31,8 @@ jobs:
         run: npm ci
 
       - name: Build frontend
+        env:
+          VITE_BASE: /encuesta-mi-primera-casa/
         run: npm run compilar
 
       - name: Upload Pages artifact
