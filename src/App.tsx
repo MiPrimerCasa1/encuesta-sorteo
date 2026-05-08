@@ -35,6 +35,14 @@ function obtenerIdSorteo(codigoCrudo: string): string {
   return coincidencia ? coincidencia[1] : "sorteo_default";
 }
 
+function normalizarIdSorteo(valor: string | null): string {
+  if (!valor) return "";
+  const limpio = valor.trim().toLowerCase();
+  if (!limpio) return "";
+  const coincidencia = limpio.match(/(sorteo\d{1,3})/);
+  return coincidencia ? coincidencia[1] : limpio;
+}
+
 function formatearNombreSorteo(idSorteo: string): string {
   const coincidencia = idSorteo.match(/^sorteo(\d{1,3})$/i);
   return coincidencia ? `Sorteo ${coincidencia[1]}` : "Sorteo vigente";
@@ -61,9 +69,12 @@ function App() {
     params.get("v") ??
     obtenerCodigoPromotor(codigoQr);
   const idSorteo =
-    params.get("id_sorteo") ??
-    params.get("raffle_id") ??
-    params.get("sorteo") ??
+    normalizarIdSorteo(params.get("id_sorteo")) ||
+    normalizarIdSorteo(params.get("idSorteo")) ||
+    normalizarIdSorteo(params.get("sorteo_id")) ||
+    normalizarIdSorteo(params.get("raffle_id")) ||
+    normalizarIdSorteo(params.get("encuesta")) ||
+    normalizarIdSorteo(params.get("sorteo")) ||
     obtenerIdSorteo(codigoQr);
   const nombreSorteo =
     params.get("nombre_sorteo") ??
