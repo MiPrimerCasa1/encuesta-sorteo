@@ -70,6 +70,11 @@ function App() {
     params.get("sorteo_nombre") ??
     formatearNombreSorteo(idSorteo);
   const mensajeWhatsapp = params.get("wa_msg") ?? codigoQr;
+  const telefono =
+    params.get("telefono") ??
+    params.get("phone") ??
+    params.get("tel") ??
+    "";
 
   const actualizarCampo = <K extends keyof FormData>(campo: K, valor: FormData[K]) => {
     setDatos((prev) => {
@@ -83,13 +88,16 @@ function App() {
 
   const validar = () => {
     const erroresNuevos: string[] = [];
-    if (!datos.nombreCompleto.trim()) erroresNuevos.push("Ingresa tu nombre y apellido.");
-    if (!datos.barrio.trim()) erroresNuevos.push("Ingresa tu barrio o direccion.");
+    if (!datos.nombreCompleto.trim()) erroresNuevos.push("Ingresá tu nombre y apellido.");
+    if (!datos.barrio.trim()) erroresNuevos.push("Ingresá tu barrio o dirección.");
     if (!datos.conoceFirma || !datos.conoceCuota55000 || !datos.quiereMasInfo) {
-      erroresNuevos.push("Responde todas las preguntas obligatorias.");
+      erroresNuevos.push("Respondé todas las preguntas obligatorias.");
+    }
+    if (!telefono.trim()) {
+      erroresNuevos.push("No se recibió el teléfono desde WhatsApp.");
     }
     if (datos.quiereMasInfo === "si" && !datos.horarioLlamada) {
-      erroresNuevos.push("Selecciona un horario de llamado.");
+      erroresNuevos.push("Seleccioná un horario de llamado.");
     }
     setErrores(erroresNuevos);
     return erroresNuevos.length === 0;
@@ -120,6 +128,7 @@ function App() {
         idSorteo,
         nombreSorteo,
         codigoQr,
+        telefono,
         mensajeWhatsapp,
         origen: "whatsapp-encuesta-directa",
       };
@@ -131,7 +140,7 @@ function App() {
       });
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as { message?: string };
-        throw new Error(body.message ?? "No pudimos enviar la encuesta. Intenta nuevamente.");
+        throw new Error(body.message ?? "No pudimos enviar la encuesta. Intentá nuevamente.");
       }
       setEnviado(true);
     } catch (error) {
@@ -197,7 +206,7 @@ function App() {
             <TextInput
               name="barrio"
               icono={iconoPin}
-              placeholder="Barrio o direccion"
+              placeholder="Barrio o dirección"
               value={datos.barrio}
               onChange={(v) => actualizarCampo("barrio", v)}
               autoComplete="street-address"
@@ -205,20 +214,20 @@ function App() {
 
             <QuestionCard
               icono={iconoInfo}
-              pregunta="Conoces la inmobiliaria Mi Primera Casa S.A.?"
+              pregunta="¿Conocés la inmobiliaria Mi Primera Casa S.A.?"
               valorSeleccionado={datos.conoceFirma}
               onChange={(v) => actualizarCampo("conoceFirma", v)}
             />
             <QuestionCard
               icono={iconoDolar}
-              pregunta="Sabias que con $55.000 por mes (cuotas fijas) comenzas pagando tu terreno?"
+              pregunta="¿Sabías que con $55.000 por mes (cuotas fijas) comenzás pagando tu terreno?"
               valorSeleccionado={datos.conoceCuota55000}
               onChange={(v) => actualizarCampo("conoceCuota55000", v)}
             />
             <QuestionCard
               icono={iconoChat}
-              pregunta="Queres mas informacion?"
-              hint="Si elegis Si, podras indicar el horario de contacto."
+              pregunta="¿Querés más información?"
+              hint="Si elegís Sí, podrás indicar el horario de contacto."
               valorSeleccionado={datos.quiereMasInfo}
               onChange={(v) => actualizarCampo("quiereMasInfo", v)}
             />
