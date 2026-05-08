@@ -48,6 +48,14 @@ function formatearNombreSorteo(idSorteo: string): string {
   return coincidencia ? `Sorteo ${coincidencia[1]}` : "Sorteo vigente";
 }
 
+function obtenerParametro(params: URLSearchParams, claves: string[]): string {
+  for (const clave of claves) {
+    const valor = params.get(clave);
+    if (valor && valor.trim()) return valor.trim();
+  }
+  return "";
+}
+
 function App() {
   const [datos, setDatos] = useState<FormData>(ESTADO_INICIAL);
   const [errores, setErrores] = useState<string[]>([]);
@@ -57,36 +65,23 @@ function App() {
 
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
   const codigoQr =
-    params.get("codigo_qr") ??
-    params.get("qr_code") ??
-    params.get("wa_msg") ??
-    params.get("codigo_promotor") ??
-    "";
+    obtenerParametro(params, ["codigo_qr", "qr_code", "wa_msg", "codigo", "Codigo"]) || "";
   const codigoPromotor =
-    params.get("codigo_promotor") ??
-    params.get("promotor") ??
-    params.get("vendedor") ??
-    params.get("v") ??
+    obtenerParametro(params, ["codigo_promotor", "promotor", "vendedor", "Vendedor", "v"]) ||
     obtenerCodigoPromotor(codigoQr);
   const idSorteo =
-    normalizarIdSorteo(params.get("id_sorteo")) ||
-    normalizarIdSorteo(params.get("idSorteo")) ||
-    normalizarIdSorteo(params.get("sorteo_id")) ||
-    normalizarIdSorteo(params.get("raffle_id")) ||
-    normalizarIdSorteo(params.get("encuesta")) ||
-    normalizarIdSorteo(params.get("sorteo")) ||
+    normalizarIdSorteo(obtenerParametro(params, ["id_sorteo", "idSorteo", "sorteo_id", "raffle_id"])) ||
+    normalizarIdSorteo(obtenerParametro(params, ["encuesta", "Encuesta", "ENCUESTA"])) ||
+    normalizarIdSorteo(obtenerParametro(params, ["sorteo", "Sorteo"])) ||
     obtenerIdSorteo(codigoQr);
   const nombreSorteo =
     params.get("nombre_sorteo") ??
     params.get("raffle_name") ??
     params.get("sorteo_nombre") ??
     formatearNombreSorteo(idSorteo);
-  const mensajeWhatsapp = params.get("wa_msg") ?? codigoQr;
+  const mensajeWhatsapp = obtenerParametro(params, ["wa_msg", "codigo", "Codigo"]) || codigoQr;
   const telefono =
-    params.get("telefono") ??
-    params.get("phone") ??
-    params.get("tel") ??
-    "";
+    obtenerParametro(params, ["telefono", "Telefono", "phone", "tel"]) || "";
 
   const actualizarCampo = <K extends keyof FormData>(campo: K, valor: FormData[K]) => {
     setDatos((prev) => {
