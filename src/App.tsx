@@ -57,6 +57,14 @@ function obtenerParametro(params: URLSearchParams, claves: string[]): string {
   return "";
 }
 
+/** Solo nombre del promotor (sin "Supervisado por …" u otros sufijos del sistema). */
+function nombrePromotorParaMostrar(texto: string): string {
+  const limpio = texto.trim();
+  if (!limpio) return "";
+  const cortado = limpio.split(/\s+[Ss]upervisad[oa]\s+por\b/i)[0];
+  return cortado?.trim() || limpio;
+}
+
 function App() {
   const [datos, setDatos] = useState<FormData>(ESTADO_INICIAL);
   const [errores, setErrores] = useState<string[]>([]);
@@ -72,9 +80,11 @@ function App() {
   const codigoPromotor =
     obtenerParametro(params, ["codigo", "Codigo", "codigo_promotor", "promotor", "v"]) ||
     obtenerCodigoPromotor(codigoQr);
-  /** Texto que muestra la tarjeta PROMOTOR en el encabezado (parámetro `vendedor`). */
-  const etiquetaPromotor =
-    obtenerParametro(params, ["vendedor", "Vendedor"]) || codigoPromotor;
+  /** Texto que muestra la tarjeta PROMOTOR (solo nombre; viene del parámetro `vendedor`). */
+  const vendedorCrudo = obtenerParametro(params, ["vendedor", "Vendedor"]);
+  const etiquetaPromotor = vendedorCrudo
+    ? nombrePromotorParaMostrar(vendedorCrudo) || codigoPromotor
+    : codigoPromotor;
   const idSorteo =
     normalizarIdSorteo(obtenerParametro(params, ["id_sorteo", "idSorteo", "sorteo_id", "raffle_id"])) ||
     normalizarIdSorteo(obtenerParametro(params, ["encuesta", "Encuesta", "ENCUESTA"])) ||
