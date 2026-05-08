@@ -65,6 +65,28 @@ function aMayusculas(valor) {
   return String(valor || "").trim().toUpperCase();
 }
 
+function obtenerPrimeraFilaResultado(resultado) {
+  const conjuntos = resultado.recordsets?.length
+    ? resultado.recordsets
+    : resultado.recordset?.length
+      ? [resultado.recordset]
+      : [];
+  return conjuntos.map((grupo) => grupo?.[0]).find(Boolean) ?? null;
+}
+
+function extraerMensajeProcedimiento(resultado) {
+  const filas = [resultado.recordset ?? [], ...(resultado.recordsets ?? [])].flat();
+  for (const fila of filas) {
+    if (!fila || typeof fila !== "object") continue;
+    const keys = ["mensaje", "message", "msg", "resultado", "detalle", "descripcion"];
+    for (const key of keys) {
+      const valor = fila[key];
+      if (typeof valor === "string" && valor.trim()) return valor.trim();
+    }
+  }
+  return "";
+}
+
 app.use(cors());
 app.use(express.json());
 
@@ -131,9 +153,36 @@ app.post("/api/survey", async (req, res) => {
     );
 
     const resultado = await request.execute(SP_NAME);
+    const totalAfectadas = (resultado.rowsAffected || []).reduce((acc, n) => acc + Number(n || 0), 0);
+    const primeraFila = obtenerPrimeraFilaResultado(resultado);
+    const codigoResultado =
+      primeraFila && typeof primeraFila === "object" && "codigo" in primeraFila
+        ? Number(primeraFila.codigo)
+        : null;
+    const mensajeDb = extraerMensajeProcedimiento(resultado);
+    const mensajeNormalizado = aMayusculas(mensajeDb);
+    const yaRegistradoPorCodigo = codigoResultado === 0;
+    const yaRegistradoPorMensaje =
+      mensajeNormalizado.includes("YA") &&
+      (mensajeNormalizado.includes("REGISTR") ||
+        mensajeNormalizado.includes("DUPLIC") ||
+        mensajeNormalizado.includes("EXISTE"));
+    const yaRegistradoPorSinInsert = resultado.returnValue === 0 && totalAfectadas === 0;
+
+    if (yaRegistradoPorCodigo || yaRegistradoPorMensaje || yaRegistradoPorSinInsert) {
+      return res.status(409).json({
+        message: mensajeDb || "Este teléfono ya fue registrado en el sorteo.",
+        code: "ALREADY_REGISTERED",
+        procedure: SP_NAME,
+        result: {
+          rowsAffected: resultado.rowsAffected,
+          returnValue: resultado.returnValue,
+        },
+      });
+    }
 
     return res.status(201).json({
-      message: "Encuesta registrada correctamente en SQL Server.",
+      message: mensajeDb || "Encuesta registrada correctamente en SQL Server.",
       procedure: SP_NAME,
       result: {
         rowsAffected: resultado.rowsAffected,

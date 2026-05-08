@@ -4,6 +4,7 @@ import Header from "./components/Header";
 import QuestionCard from "./components/QuestionCard";
 import SubmitButton from "./components/SubmitButton";
 import SuccessMessage from "./components/SuccessMessage";
+import YaRegistradoMessage from "./components/YaRegistradoMessage";
 import TextInput from "./components/TextInput";
 import TimeSelector from "./components/TimeSelector";
 
@@ -62,6 +63,7 @@ function App() {
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState("");
+  const [mensajeYaRegistrado, setMensajeYaRegistrado] = useState("");
 
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
   const codigoQr =
@@ -112,6 +114,7 @@ function App() {
 
   const handleSubmit = async () => {
     setErrorEnvio("");
+    setMensajeYaRegistrado("");
     if (!validar()) return;
 
     try {
@@ -145,8 +148,20 @@ function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      const body = (await response.json().catch(() => ({}))) as {
+        message?: string;
+        code?: string;
+      };
+
+      if (response.status === 409 || body.code === "ALREADY_REGISTERED") {
+        setMensajeYaRegistrado(
+          body.message?.trim() ||
+            "Este teléfono ya fue registrado en esta encuesta."
+        );
+        return;
+      }
+
       if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as { message?: string };
         throw new Error(body.message ?? "No pudimos enviar la encuesta. Intentá nuevamente.");
       }
       setEnviado(true);
@@ -199,6 +214,8 @@ function App() {
 
       {enviado ? (
         <SuccessMessage />
+      ) : mensajeYaRegistrado ? (
+        <YaRegistradoMessage mensaje={mensajeYaRegistrado} />
       ) : (
         <>
           <main className="card-principal">
