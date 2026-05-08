@@ -67,7 +67,7 @@ function App() {
   const codigoQr =
     obtenerParametro(params, ["codigo_qr", "qr_code", "wa_msg", "codigo", "Codigo"]) || "";
   const codigoPromotor =
-    obtenerParametro(params, ["codigo_promotor", "promotor", "vendedor", "Vendedor", "v"]) ||
+    obtenerParametro(params, ["codigo", "Codigo", "codigo_promotor", "promotor", "vendedor", "Vendedor", "v"]) ||
     obtenerCodigoPromotor(codigoQr);
   const idSorteo =
     normalizarIdSorteo(obtenerParametro(params, ["id_sorteo", "idSorteo", "sorteo_id", "raffle_id"])) ||
