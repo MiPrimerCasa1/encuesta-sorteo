@@ -46,7 +46,9 @@ function BranchFooter({ desbloqueado }: Props) {
 
       {/* ---- Redes (debajo del historial de sorteos cuando aplica) ---- */}
       <section className="footer__seccion">
-        <h2 className="footer__titulo">SEGUINOS EN NUESTRAS REDES</h2>
+        <h2 className="footer__titulo footer__titulo--redes">
+          SEGUINOS EN NUESTRAS REDES
+        </h2>
         <div className="redes">
           {REDES_SOCIALES.map((red, idx) => (
             <Fragment key={red.id}>

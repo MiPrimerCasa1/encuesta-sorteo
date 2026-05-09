@@ -40,6 +40,34 @@
   border-radius: 1px;
 }
 
+@keyframes footer-titulo-redes-atencion {
+  0%,
+  100% {
+    text-shadow: 0 1px 2px rgba(200, 17, 26, 0.2);
+    filter: brightness(1);
+  }
+  50% {
+    text-shadow:
+      0 2px 12px rgba(200, 17, 26, 0.45),
+      0 0 24px rgba(200, 17, 26, 0.25);
+    filter: brightness(1.12);
+  }
+}
+
+.footer__titulo--redes {
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  color: var(--color-rojo);
+  animation: footer-titulo-redes-atencion 2.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer__titulo--redes {
+    animation: none;
+    text-shadow: 0 1px 3px rgba(200, 17, 26, 0.25);
+  }
+}
+
 .footer__titulo-inner {
   display: inline-flex;
   align-items: center;
@@ -402,6 +430,11 @@
   .footer__titulo {
     font-size: 12px;
     letter-spacing: 2px;
+  }
+
+  .footer__titulo--redes {
+    font-size: 14px;
+    letter-spacing: 0.18em;
   }
 
   .footer__aclaracion {
