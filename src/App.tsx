@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import BranchFooter from "./components/BranchFooter";
 import Header from "./components/Header";
 import QuestionCard from "./components/QuestionCard";
@@ -112,6 +112,26 @@ function App() {
   const mensajeWhatsapp = obtenerParametro(params, ["wa_msg", "codigo", "Codigo"]) || codigoQr;
   const telefono =
     obtenerParametro(params, ["telefono", "Telefono", "phone", "tel"]) || "";
+
+  /**
+   * Tras enviar: siempre llevar la vista al mensaje principal (éxito o ya registrado),
+   * antes del resto del contenido (sorpresa, footer).
+   */
+  useLayoutEffect(() => {
+    if (!enviado && mensajeYaRegistrado.length === 0) return;
+    const el = document.getElementById("seccion-resultado-encuesta");
+    if (!el) return;
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    const behavior = prefersReduced ? "auto" : "smooth";
+    const scroll = () => {
+      el.scrollIntoView({ behavior, block: "start", inline: "nearest" });
+    };
+    requestAnimationFrame(() => {
+      requestAnimationFrame(scroll);
+    });
+  }, [enviado, mensajeYaRegistrado]);
 
   const actualizarCampo = <K extends keyof FormData>(campo: K, valor: FormData[K]) => {
     setDatos((prev) => {

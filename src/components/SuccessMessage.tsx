@@ -1,6 +1,11 @@
 function SuccessMessage() {
   return (
-    <div className="success-card" role="status" aria-live="polite">
+    <div
+      id="seccion-resultado-encuesta"
+      className="success-card"
+      role="status"
+      aria-live="polite"
+    >
       <span className="success-card__icono-wrap" aria-hidden="true">
         <span className="success-card__icono">✓</span>
       </span>

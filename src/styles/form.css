@@ -184,6 +184,11 @@
   gap: var(--espacio-md);
 }
 
+/* Mensaje post-envío: ancla para scroll; mismo id en tarjeta ya registrado */
+#seccion-resultado-encuesta {
+  scroll-margin-top: 16px;
+}
+
 .success-card__icono-wrap {
   width: 80px;
   height: 80px;
