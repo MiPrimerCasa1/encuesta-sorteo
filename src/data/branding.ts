@@ -21,4 +21,11 @@ export const TEXTOS = {
 
   sorpresaTitulo: "Tenemos una sorpresa para ti",
   sorpresaCta: "Toque aquí",
+  sorpresaDescuentoEncabezado: "Hasta un 40% de descuento",
+  sorpresaDescuentoTexto:
+    "en productos seleccionados de nuestro catálogo. Consultá vigencia y condiciones con tu asesor.",
+  sorpresaAsesorCta: "Comunicarse con un asesor",
+
+  historialSorteosTitulo: "Nuestro historial de sorteos",
+  historialSorteosBtnFotos: "Ver fotos de los ganadores",
 };

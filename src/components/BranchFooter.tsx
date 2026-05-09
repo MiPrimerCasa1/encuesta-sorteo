@@ -1,4 +1,5 @@
 import { Fragment, type ReactElement } from 'react'
+import SorteosHistorial from './SorteosHistorial'
 import { SUCURSALES } from '../data/branches'
 import { REDES_SOCIALES } from '../data/socialLinks'
 import { TEXTOS } from '../data/branding'
@@ -41,6 +42,8 @@ function BranchFooter({ desbloqueado }: Props) {
 
   return (
     <footer className="footer">
+      {desbloqueado ? <SorteosHistorial /> : null}
+
       {/* ---- Sucursales ---- */}
       <section id="seccion-sucursales" className="footer__seccion">
         <h2 className="footer__titulo">

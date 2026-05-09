@@ -230,7 +230,7 @@ function App() {
       {enviado ? (
         <>
           <SuccessMessage />
-          <SorpresaSection />
+          <SorpresaSection telefono={telefono} />
         </>
       ) : mensajeYaRegistrado ? (
         <YaRegistradoMessage mensaje={mensajeYaRegistrado} />

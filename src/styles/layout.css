@@ -40,6 +40,126 @@
   border-radius: 1px;
 }
 
+.footer__titulo-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.footer__titulo-icono {
+  display: inline-flex;
+  color: var(--color-rojo);
+  flex-shrink: 0;
+}
+
+.footer__titulo-icono svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* ---- Historial de sorteos ---- */
+
+.sorteos-historial__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+.sorteos-historial__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+  padding: var(--espacio-sm);
+  border-radius: var(--radio-input);
+  border: 1px solid var(--color-gris-borde);
+  background: var(--color-gris-fondo);
+}
+
+.sorteos-historial__fila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+}
+
+.sorteos-historial__año-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-rojo);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.sorteos-historial__icono-año {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.sorteos-historial__año {
+  font-variant-numeric: tabular-nums;
+}
+
+.sorteos-historial__detalle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--color-gris-texto);
+}
+
+.sorteos-historial__btn-fotos {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 10px 14px;
+  border-radius: var(--radio-input);
+  border: 2px solid var(--color-rojo);
+  background: var(--color-blanco);
+  color: var(--color-rojo);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sorteos-historial__btn-fotos:hover {
+  background: var(--color-rojo-suave);
+}
+
+.sorteos-historial__btn-fotos:focus-visible {
+  outline: 2px solid var(--color-rojo);
+  outline-offset: 3px;
+}
+
+.sorteos-historial__btn-fotos-icono {
+  display: inline-flex;
+  color: var(--color-rojo);
+}
+
+.sorteos-historial__btn-fotos-icono svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.sorteos-historial__icono-titulo {
+  width: 18px;
+  height: 18px;
+}
+
 /* Aclaración legal */
 .footer__aclaracion {
   font-size: 11px;
