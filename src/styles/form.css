@@ -176,6 +176,8 @@
   background: var(--color-blanco);
   border-radius: var(--radio-card);
   padding: var(--espacio-xl) var(--espacio-lg);
+  width: 100%;
+  box-sizing: border-box;
   text-align: center;
   box-shadow: var(--sombra-card);
   display: flex;
@@ -265,11 +267,13 @@
   }
 }
 
+/* Misma caja que .success-card: mismo padding, gap y ancho para parecerse en alto */
 .sorpresa-card {
   background: var(--color-blanco);
   border-radius: var(--radio-card);
   padding: var(--espacio-xl) var(--espacio-lg);
-  margin-top: var(--espacio-md);
+  width: 100%;
+  box-sizing: border-box;
   text-align: center;
   box-shadow: var(--sombra-card);
   display: flex;
@@ -280,7 +284,7 @@
 
 .sorpresa-card__titulo {
   margin: 0;
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 800;
   color: var(--color-rojo);
   line-height: 1.25;
@@ -289,9 +293,10 @@
 .sorpresa-card__tocar {
   position: relative;
   width: 100%;
-  max-width: 300px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: var(--espacio-lg) var(--espacio-md);
+  box-sizing: border-box;
+  padding: var(--espacio-sm) var(--espacio-md);
   border: 2px dashed rgba(200, 17, 26, 0.45);
   border-radius: var(--radio-card);
   background: linear-gradient(
@@ -304,7 +309,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--espacio-sm);
+  gap: var(--espacio-xs);
   font-family: inherit;
   animation: sorpresa-tocar-respirar 2.4s ease-in-out infinite;
 }
@@ -325,10 +330,10 @@
 .sorpresa-card__tocar-logo {
   position: relative;
   z-index: 1;
-  width: min(160px, 48vw);
+  width: min(80px, 26vw);
   height: auto;
   display: block;
-  animation: sorpresa-logo-pulse 1.35s ease-in-out infinite;
+  animation: sorpresa-logo-pulse 0.95s ease-in-out infinite;
 }
 
 .sorpresa-card__tocar-texto {
@@ -351,8 +356,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--espacio-sm);
-  padding: var(--espacio-lg) var(--espacio-md);
+  gap: var(--espacio-xs);
+  padding: var(--espacio-md) var(--espacio-sm);
   border-radius: var(--radio-input);
   background: linear-gradient(
     180deg,
@@ -366,19 +371,40 @@
 
 .sorpresa-card__oferta-titulo {
   margin: 0;
-  font-size: 19px;
+  text-align: center;
+  line-height: 1.05;
+  animation: sorpresa-fade-subir 0.55s 0.12s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.sorpresa-card__oferta-titulo-pre,
+.sorpresa-card__oferta-titulo-post {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: clamp(14px, 3.8vw, 17px);
   font-weight: 800;
   color: var(--color-rojo);
-  line-height: 1.25;
-  text-align: center;
-  animation: sorpresa-fade-subir 0.55s 0.12s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Grande y visible, con tope para no alargar demasiado la tarjeta vs. “Ya estás participando” */
+.sorpresa-card__oferta-pct {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 0.06em;
+  font-size: clamp(2rem, 10vw, 2.65rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--color-rojo);
+  text-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.35),
+    0 4px 18px rgba(200, 17, 26, 0.45);
 }
 
 .sorpresa-card__oferta-texto {
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  line-height: 1.45;
+  line-height: 1.35;
   color: var(--color-gris-texto);
   text-align: center;
   max-width: 26rem;
@@ -389,7 +415,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 14px 22px;
+  padding: 11px 18px;
   border-radius: var(--radio-input);
   background: var(--color-rojo);
   color: var(--color-blanco);
@@ -591,6 +617,10 @@
   }
 
   .success-card__titulo {
+    font-size: 26px;
+  }
+
+  .sorpresa-card__titulo {
     font-size: 26px;
   }
 

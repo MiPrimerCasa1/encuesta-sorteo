@@ -85,36 +85,42 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--espacio-sm);
+  justify-content: flex-start;
+  column-gap: 10px;
+  row-gap: 8px;
 }
 
 .sorteos-historial__año-wrap {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  flex: 0 0 auto;
   color: var(--color-rojo);
-  font-weight: 800;
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  flex: 1 1 auto;
-  min-width: 0;
+}
+
+.sorteos-historial__año-wrap svg {
+  color: inherit;
 }
 
 .sorteos-historial__icono-año {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
+  color: var(--color-rojo);
 }
 
 .sorteos-historial__año {
   font-variant-numeric: tabular-nums;
+  font-size: clamp(1.2rem, 4.5vw, 1.45rem);
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  color: var(--color-rojo);
 }
 
 .sorteos-historial__detalle {
   margin: 0;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 700;
   line-height: 1.45;
   color: var(--color-gris-texto);
 }
@@ -124,9 +130,9 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   max-width: 100%;
-  padding: 8px 12px;
+  padding: 7px 11px;
   border-radius: var(--radio-input);
   border: 2px solid var(--color-rojo);
   background: var(--color-blanco);
@@ -425,6 +431,15 @@
   .sorteos-historial__btn-fotos {
     font-size: 12px;
     padding: 10px 14px;
+  }
+
+  .sorteos-historial__año {
+    font-size: 1.5rem;
+  }
+
+  .sorteos-historial__icono-año {
+    width: 26px;
+    height: 26px;
   }
 }
 

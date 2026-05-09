@@ -52,8 +52,8 @@ function SorpresaSection({ telefono }: Props) {
             src={LOGO_URL}
             alt=""
             className="sorpresa-card__tocar-logo"
-            width={160}
-            height={160}
+            width={80}
+            height={80}
             decoding="async"
           />
           <span className="sorpresa-card__tocar-texto">{TEXTOS.sorpresaCta}</span>
@@ -68,7 +68,13 @@ function SorpresaSection({ telefono }: Props) {
           aria-labelledby="sorpresa-oferta-titulo"
         >
           <p id="sorpresa-oferta-titulo" className="sorpresa-card__oferta-titulo">
-            {TEXTOS.sorpresaDescuentoEncabezado}
+            <span className="sorpresa-card__oferta-titulo-pre">
+              {TEXTOS.sorpresaDescuentoAntesPct}
+            </span>
+            <span className="sorpresa-card__oferta-pct">{TEXTOS.sorpresaDescuentoPct}</span>
+            <span className="sorpresa-card__oferta-titulo-post">
+              {TEXTOS.sorpresaDescuentoDespuesPct}
+            </span>
           </p>
           <p className="sorpresa-card__oferta-texto">
             {TEXTOS.sorpresaDescuentoTexto}

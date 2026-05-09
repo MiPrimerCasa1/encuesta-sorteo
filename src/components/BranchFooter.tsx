@@ -44,6 +44,32 @@ function BranchFooter({ desbloqueado }: Props) {
     <footer className="footer">
       {desbloqueado ? <SorteosHistorial /> : null}
 
+      {/* ---- Redes (debajo del historial de sorteos cuando aplica) ---- */}
+      <section className="footer__seccion">
+        <h2 className="footer__titulo">SEGUINOS EN NUESTRAS REDES</h2>
+        <div className="redes">
+          {REDES_SOCIALES.map((red, idx) => (
+            <Fragment key={red.id}>
+              <a
+                className="red"
+                href={red.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Abrir ${red.red}: ${red.handle}`}
+              >
+                <span className="red__icono" aria-hidden="true">
+                  {iconosPorRed[red.red]}
+                </span>
+                <span className="red__handle">{red.handle}</span>
+              </a>
+              {idx < REDES_SOCIALES.length - 1 && (
+                <span className="redes__separador" aria-hidden="true" />
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </section>
+
       {/* ---- Sucursales ---- */}
       <section id="seccion-sucursales" className="footer__seccion">
         <h2 className="footer__titulo">
@@ -77,32 +103,6 @@ function BranchFooter({ desbloqueado }: Props) {
               </button>
             )
           )}
-        </div>
-      </section>
-
-      {/* ---- Redes ---- */}
-      <section className="footer__seccion">
-        <h2 className="footer__titulo">SEGUINOS EN NUESTRAS REDES</h2>
-        <div className="redes">
-          {REDES_SOCIALES.map((red, idx) => (
-            <Fragment key={red.id}>
-              <a
-                className="red"
-                href={red.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`Abrir ${red.red}: ${red.handle}`}
-              >
-                <span className="red__icono" aria-hidden="true">
-                  {iconosPorRed[red.red]}
-                </span>
-                <span className="red__handle">{red.handle}</span>
-              </a>
-              {idx < REDES_SOCIALES.length - 1 && (
-                <span className="redes__separador" aria-hidden="true" />
-              )}
-            </Fragment>
-          ))}
         </div>
       </section>
 

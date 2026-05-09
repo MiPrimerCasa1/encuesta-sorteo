@@ -21,9 +21,11 @@ export const TEXTOS = {
 
   sorpresaTitulo: "Tenemos una sorpresa para ti",
   sorpresaCta: "Toque aquí",
-  sorpresaDescuentoEncabezado: "Hasta un 40% de descuento",
-  sorpresaDescuentoTexto:
-    "En productos seleccionados. Consultá vigencia y condiciones con nuestro asesor.",
+  /** Línea del descuento; el porcentaje se muestra grande en la UI */
+  sorpresaDescuentoAntesPct: "Hasta un ",
+  sorpresaDescuentoPct: "40%",
+  sorpresaDescuentoDespuesPct: " de descuento",
+  sorpresaDescuentoTexto: "En productos seleccionados.",
   sorpresaAsesorCta: "Comunicarse con un asesor",
 
   historialSorteosTitulo: "Nuestro historial de sorteos",
