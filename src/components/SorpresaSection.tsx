@@ -3,11 +3,11 @@ import { LOGO_URL, TEXTOS } from "../data/branding";
 import { REDES_SOCIALES } from "../data/socialLinks";
 
 type Props = {
-  telefono: string;
+  telefonoAsesor: string;
 };
 
-function enlaceContactoAsesor(telefono: string): { href: string; externo: boolean } {
-  const digits = telefono.replace(/\D/g, "");
+function enlaceContactoAsesor(telefonoAsesor: string): { href: string; externo: boolean } {
+  const digits = telefonoAsesor.replace(/\D/g, "");
   if (digits.length >= 8) {
     const texto = encodeURIComponent(
       "Hola, quiero información sobre el descuento y los productos disponibles."
@@ -24,14 +24,14 @@ function enlaceContactoAsesor(telefono: string): { href: string; externo: boolea
   };
 }
 
-function SorpresaSection({ telefono }: Props) {
+function SorpresaSection({ telefonoAsesor }: Props) {
   const [ofertaVisible, setOfertaVisible] = useState(false);
 
   const revelar = useCallback(() => {
     setOfertaVisible(true);
   }, []);
 
-  const contacto = enlaceContactoAsesor(telefono);
+  const contacto = enlaceContactoAsesor(telefonoAsesor);
 
   return (
     <section className="sorpresa-card" aria-labelledby="sorpresa-heading">

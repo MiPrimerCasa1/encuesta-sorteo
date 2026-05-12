@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import BranchFooter from "./components/BranchFooter";
 import Header from "./components/Header";
 import QuestionCard from "./components/QuestionCard";
@@ -7,7 +7,7 @@ import SorpresaSection from "./components/SorpresaSection";
 import SuccessMessage from "./components/SuccessMessage";
 import YaRegistradoMessage from "./components/YaRegistradoMessage";
 import TextInput from "./components/TextInput";
-import TimeSelector from "./components/TimeSelector";
+import EntrevistaSelector, { type ModalidadEntrevista } from "./components/EntrevistaSelector";
 
 type FormData = {
   nombreCompleto: string;
@@ -15,7 +15,10 @@ type FormData = {
   conoceFirma: "si" | "no" | "";
   conoceCuota55000: "si" | "no" | "";
   quiereMasInfo: "si" | "no" | "";
-  horarioLlamada: "manana" | "tarde" | "";
+  fechaEntrevista: string;
+  horaEntrevista: string;
+  modalidadEntrevista: ModalidadEntrevista;
+  domicilioEntrevista: string;
 };
 
 const ESTADO_INICIAL: FormData = {
@@ -24,7 +27,10 @@ const ESTADO_INICIAL: FormData = {
   conoceFirma: "",
   conoceCuota55000: "",
   quiereMasInfo: "",
-  horarioLlamada: "",
+  fechaEntrevista: "",
+  horaEntrevista: "",
+  modalidadEntrevista: "",
+  domicilioEntrevista: "",
 };
 
 function obtenerCodigoPromotor(codigoCrudo: string): string {
@@ -66,6 +72,11 @@ function nombrePromotorParaMostrar(texto: string): string {
   return cortado?.trim() || limpio;
 }
 
+type SupervisorInfo = {
+  telefonoSupervisor: string;
+  domicilioSucursal: string;
+};
+
 function App() {
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
 
@@ -88,6 +99,8 @@ function App() {
       ? "Vista previa: participación ya registrada."
       : ""
   );
+  const [supervisorInfo, setSupervisorInfo] = useState<SupervisorInfo | null>(null);
+
   const codigoQr =
     obtenerParametro(params, ["codigo_qr", "qr_code", "wa_msg", "codigo", "Codigo"]) || "";
   /** Valor que envía la BD → SP `@usuario` (ej. SORTEO01_V1); no usar `vendedor` aquí. */
@@ -113,6 +126,16 @@ function App() {
   const telefono =
     obtenerParametro(params, ["telefono", "Telefono", "phone", "tel"]) || "";
 
+  useEffect(() => {
+    if (!codigoPromotor || codigoPromotor === "sin_codigo") return;
+    fetch(`/api/promotor?codigo=${encodeURIComponent(codigoPromotor)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: SupervisorInfo | null) => {
+        if (data) setSupervisorInfo(data);
+      })
+      .catch(() => {});
+  }, [codigoPromotor]);
+
   /**
    * Tras enviar: siempre llevar la vista al mensaje principal (éxito o ya registrado),
    * antes del resto del contenido (sorpresa, footer).
@@ -137,7 +160,10 @@ function App() {
     setDatos((prev) => {
       const nuevo = { ...prev, [campo]: valor };
       if (campo === "quiereMasInfo" && valor === "no") {
-        nuevo.horarioLlamada = "";
+        nuevo.fechaEntrevista = "";
+        nuevo.horaEntrevista = "";
+        nuevo.modalidadEntrevista = "";
+        nuevo.domicilioEntrevista = "";
       }
       return nuevo;
     });
@@ -153,8 +179,13 @@ function App() {
     if (!telefono.trim()) {
       erroresNuevos.push("No se recibió el teléfono desde WhatsApp.");
     }
-    if (datos.quiereMasInfo === "si" && !datos.horarioLlamada) {
-      erroresNuevos.push("Seleccioná un horario de llamado.");
+    if (datos.quiereMasInfo === "si") {
+      if (!datos.fechaEntrevista) erroresNuevos.push("Seleccioná la fecha de la entrevista.");
+      if (!datos.horaEntrevista) erroresNuevos.push("Seleccioná la hora de la entrevista.");
+      if (!datos.modalidadEntrevista) erroresNuevos.push("Seleccioná la modalidad de la entrevista.");
+      if (datos.modalidadEntrevista === "domicilio" && !datos.domicilioEntrevista.trim()) {
+        erroresNuevos.push("Ingresá el domicilio para la visita.");
+      }
     }
     setErrores(erroresNuevos);
     return erroresNuevos.length === 0;
@@ -173,7 +204,20 @@ function App() {
         { codigoPregunta: "quiere_mas_info", valor: datos.quiereMasInfo },
       ];
       if (datos.quiereMasInfo === "si") {
-        respuestas.push({ codigoPregunta: "horario_llamada", valor: datos.horarioLlamada });
+        respuestas.push({
+          codigoPregunta: "fecha_entrevista",
+          valor: `${datos.fechaEntrevista}T${datos.horaEntrevista}`,
+        });
+        respuestas.push({
+          codigoPregunta: "modalidad_entrevista",
+          valor: datos.modalidadEntrevista,
+        });
+        if (datos.modalidadEntrevista === "domicilio") {
+          respuestas.push({
+            codigoPregunta: "domicilio_entrevista",
+            valor: datos.domicilioEntrevista.trim(),
+          });
+        }
       }
 
       const payload = {
@@ -263,7 +307,9 @@ function App() {
       {enviado ? (
         <>
           <SuccessMessage />
-          <SorpresaSection telefono={telefono} />
+          <SorpresaSection
+            telefonoAsesor={supervisorInfo?.telefonoSupervisor || telefono}
+          />
         </>
       ) : mensajeYaRegistrado ? (
         <YaRegistradoMessage mensaje={mensajeYaRegistrado} />
@@ -302,14 +348,21 @@ function App() {
             <QuestionCard
               icono={iconoChat}
               pregunta="¿Querés más información?"
-              hint="Si elegís Sí, podrás indicar el horario de contacto."
+              hint="Si elegís Sí, podrás agendar una entrevista con el supervisor."
               valorSeleccionado={datos.quiereMasInfo}
               onChange={(v) => actualizarCampo("quiereMasInfo", v)}
             />
-            <TimeSelector
-              valorSeleccionado={datos.horarioLlamada}
-              onChange={(v) => actualizarCampo("horarioLlamada", v)}
+            <EntrevistaSelector
+              fechaSeleccionada={datos.fechaEntrevista}
+              horaSeleccionada={datos.horaEntrevista}
+              modalidadSeleccionada={datos.modalidadEntrevista}
+              domicilioIngresado={datos.domicilioEntrevista}
+              onFechaChange={(v) => actualizarCampo("fechaEntrevista", v)}
+              onHoraChange={(v) => actualizarCampo("horaEntrevista", v)}
+              onModalidadChange={(v) => actualizarCampo("modalidadEntrevista", v)}
+              onDomicilioChange={(v) => actualizarCampo("domicilioEntrevista", v)}
               deshabilitado={datos.quiereMasInfo !== "si"}
+              sucursalSupervisor={supervisorInfo?.domicilioSucursal}
             />
 
             {errores.length > 0 ? (

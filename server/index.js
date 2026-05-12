@@ -10,6 +10,14 @@ import { z } from "zod";
 const app = express();
 const PORT = process.env.PORT || process.env.API_PORT || 3001;
 const SP_NAME = process.env.SP_NAME || "dbo.encuestaCargaSorteo01";
+/**
+ * SP para obtener datos del promotor/supervisor.
+ * Debe recibir @codigo (NVarChar) y devolver en el primer recordset:
+ *   - telefono_supervisor (NVarChar): teléfono del supervisor para contacto WA
+ *   - domicilio_sucursal  (NVarChar): dirección de la sucursal del supervisor
+ */
+const SP_PROMOTOR = process.env.SP_PROMOTOR || "dbo.obtenerDatosPromotor";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const distPath = path.resolve(__dirname, "../dist");
@@ -48,7 +56,7 @@ const encuestaSchema = z.object({
     .array(
       z.object({
         codigoPregunta: z.string().trim().min(3).max(60),
-        valor: z.string().trim().min(1).max(120),
+        valor: z.string().trim().min(1).max(200),
       })
     )
     .min(3),
@@ -103,6 +111,41 @@ app.get("/api/health", async (_, res) => {
   }
 });
 
+/**
+ * GET /api/promotor?codigo=SORTEO01_V1
+ * Devuelve el teléfono del supervisor y la dirección de su sucursal.
+ * El SP configurado en SP_PROMOTOR debe aceptar @codigo y retornar
+ * las columnas telefono_supervisor y domicilio_sucursal.
+ */
+app.get("/api/promotor", async (req, res) => {
+  const codigo = String(req.query.codigo || "").trim();
+  if (codigo.length < 2) {
+    return res.status(400).json({ message: "Código de promotor requerido." });
+  }
+
+  try {
+    const pool = await getPool();
+    const request = pool.request();
+    request.input("codigo", sql.NVarChar(100), codigo.toUpperCase());
+    const resultado = await request.execute(SP_PROMOTOR);
+    const fila = resultado.recordset?.[0] ?? resultado.recordsets?.[0]?.[0];
+
+    if (!fila) {
+      return res.status(404).json({ message: "Promotor no encontrado." });
+    }
+
+    return res.json({
+      telefonoSupervisor: String(fila.telefono_supervisor ?? fila.telefonoSupervisor ?? ""),
+      domicilioSucursal: String(fila.domicilio_sucursal ?? fila.domicilioSucursal ?? ""),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error al consultar datos del promotor.",
+      detail: error instanceof Error ? error.message : "Error desconocido",
+    });
+  }
+});
+
 app.post("/api/survey", async (req, res) => {
   const parsed = encuestaSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -117,10 +160,21 @@ app.post("/api/survey", async (req, res) => {
     payload.respuestas.map((item) => [item.codigoPregunta, item.valor])
   );
 
-  if (aMayusculas(mapaRespuestas.quiere_mas_info) === "SI" && !mapaRespuestas.horario_llamada) {
-    return res.status(400).json({
-      message: "Debes indicar un horario para recibir llamadas.",
-    });
+  const quiereMasInfo = aMayusculas(mapaRespuestas.quiere_mas_info) === "SI";
+
+  if (quiereMasInfo) {
+    if (!mapaRespuestas.fecha_entrevista) {
+      return res.status(400).json({ message: "Debes indicar la fecha de la entrevista." });
+    }
+    if (!mapaRespuestas.modalidad_entrevista) {
+      return res.status(400).json({ message: "Debes indicar la modalidad de la entrevista." });
+    }
+    if (
+      aMayusculas(mapaRespuestas.modalidad_entrevista) === "DOMICILIO" &&
+      !mapaRespuestas.domicilio_entrevista
+    ) {
+      return res.status(400).json({ message: "Debes indicar el domicilio para la visita." });
+    }
   }
 
   try {
@@ -145,11 +199,26 @@ app.post("/api/survey", async (req, res) => {
     );
     request.input("campo5Codigo", sql.Int, 5);
     request.input("campo5Valor", sql.NVarChar(100), aMayusculas(mapaRespuestas.quiere_mas_info));
+    // campo6: fecha y hora de la entrevista (ISO: "2026-06-15T14:30")
     request.input("campo6Codigo", sql.Int, 6);
     request.input(
       "campo6Valor",
       sql.NVarChar(100),
-      aMayusculas(mapaRespuestas.horario_llamada || "")
+      mapaRespuestas.fecha_entrevista || ""
+    );
+    // campo7: modalidad (TELEFONICA | SUCURSAL | DOMICILIO)
+    request.input("campo7Codigo", sql.Int, 7);
+    request.input(
+      "campo7Valor",
+      sql.NVarChar(100),
+      aMayusculas(mapaRespuestas.modalidad_entrevista || "")
+    );
+    // campo8: domicilio del encuestado (solo cuando modalidad = DOMICILIO)
+    request.input("campo8Codigo", sql.Int, 8);
+    request.input(
+      "campo8Valor",
+      sql.NVarChar(200),
+      mapaRespuestas.domicilio_entrevista || ""
     );
 
     const resultado = await request.execute(SP_NAME);
