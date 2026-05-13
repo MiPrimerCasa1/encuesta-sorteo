@@ -265,10 +265,7 @@ function EntrevistaSelector({
 
       {/* ── Modalidad ── */}
       <p className="entrevista-selector__subtitulo">
-        <span className="entrevista-selector__subtitulo-destaque">¿Preferís en:</span>{" "}
-        <span className="entrevista-selector__subtitulo-resto">
-          nuestras oficinas o en su domicilio
-        </span>
+        <span className="entrevista-selector__subtitulo-destaque">¿Preferís en:</span>
       </p>
 
       <div className="entrevista-selector__modalidades">
