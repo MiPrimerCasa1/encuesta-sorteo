@@ -203,9 +203,9 @@ function App() {
     if (datos.quiereMasInfo === "si") {
       if (!datos.fechaEntrevista) erroresNuevos.push("Seleccioná la fecha de la entrevista.");
       if (!datos.horaEntrevista) erroresNuevos.push("Seleccioná la hora de la entrevista.");
-      if (!datos.modalidadEntrevista) erroresNuevos.push("Seleccioná la modalidad de la entrevista.");
+      if (!datos.modalidadEntrevista) erroresNuevos.push("Seleccioná nuestras oficinas o su domicilio.");
       if (datos.modalidadEntrevista === "domicilio" && !datos.domicilioEntrevista.trim()) {
-        erroresNuevos.push("Ingresá el domicilio para la visita.");
+        erroresNuevos.push("Ingresá la dirección de su domicilio.");
       }
     }
     setErrores(erroresNuevos);

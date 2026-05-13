@@ -152,13 +152,13 @@ app.post("/api/survey", async (req, res) => {
       return res.status(400).json({ message: "Debes indicar la fecha de la entrevista." });
     }
     if (!mapaRespuestas.modalidad_entrevista) {
-      return res.status(400).json({ message: "Debes indicar la modalidad de la entrevista." });
+      return res.status(400).json({ message: "Debes indicar si preferís nuestras oficinas o su domicilio." });
     }
     if (
       aMayusculas(mapaRespuestas.modalidad_entrevista) === "DOMICILIO" &&
       !mapaRespuestas.domicilio_entrevista
     ) {
-      return res.status(400).json({ message: "Debes indicar el domicilio para la visita." });
+      return res.status(400).json({ message: "Debes indicar la dirección de su domicilio." });
     }
   }
 

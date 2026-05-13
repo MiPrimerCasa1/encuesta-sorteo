@@ -138,8 +138,8 @@ function EntrevistaSelector({
   );
 
   const MODALIDADES: { valor: ModalidadEntrevista; etiqueta: string; icono: ReactNode }[] = [
-    { valor: "sucursal", etiqueta: "En sucursal", icono: iconoSucursal },
-    { valor: "domicilio", etiqueta: "En mi domicilio", icono: iconoDomicilio },
+    { valor: "sucursal", etiqueta: "Nuestras oficinas", icono: iconoSucursal },
+    { valor: "domicilio", etiqueta: "En su domicilio", icono: iconoDomicilio },
   ];
 
   return (
@@ -264,7 +264,9 @@ function EntrevistaSelector({
       </div>
 
       {/* ── Modalidad ── */}
-      <p className="entrevista-selector__subtitulo">¿Cómo preferís la entrevista?</p>
+      <p className="entrevista-selector__subtitulo">
+        ¿Preferís en nuestras oficinas o en su domicilio?
+      </p>
 
       <div className="entrevista-selector__modalidades">
         {MODALIDADES.map(({ valor, etiqueta, icono }) => (
@@ -301,7 +303,7 @@ function EntrevistaSelector({
           <input
             type="text"
             className="entrevista-selector__domicilio-input"
-            placeholder="Ingresá tu dirección completa"
+            placeholder="Ingresá la dirección de su domicilio"
             value={domicilioIngresado}
             onChange={(e) => onDomicilioChange(e.target.value)}
             autoComplete="street-address"
