@@ -392,22 +392,53 @@
 
 /* ── Hora picker (grilla de botones) ── */
 
+@keyframes hora-picker-titulo-atencion {
+  0%,
+  100% {
+    box-shadow: 0 2px 12px rgba(200, 17, 26, 0.35);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 4px 18px rgba(200, 17, 26, 0.5);
+    filter: brightness(1.06);
+  }
+}
+
 .hora-picker {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .hora-picker__titulo {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1px;
+  display: block;
+  text-align: center;
+  font-size: clamp(12px, 3.4vw, 15px);
+  font-weight: 900;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--color-rojo);
+  color: var(--color-blanco);
+  background: linear-gradient(135deg, var(--color-rojo) 0%, var(--color-rojo-oscuro) 100%);
+  padding: 10px 14px;
+  border-radius: var(--radio-boton);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 2px 12px rgba(200, 17, 26, 0.4);
+  animation: hora-picker-titulo-atencion 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hora-picker__titulo {
+    animation: none;
+  }
 }
 
 .entrevista-selector--deshabilitado .hora-picker__titulo {
-  color: var(--color-gris-deshabilitado);
+  color: var(--color-gris-texto);
+  background: var(--color-gris-fondo);
+  border-color: var(--color-gris-borde);
+  box-shadow: none;
+  animation: none;
+  filter: none;
 }
 
 .hora-picker__grid {
