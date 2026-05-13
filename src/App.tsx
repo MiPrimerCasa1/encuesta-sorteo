@@ -371,11 +371,6 @@ function App() {
             <QuestionCard
               icono={iconoChat}
               pregunta="¿Querés más información?"
-              hint={
-                <strong>
-                  Si elegís Sí, podrás agendar una entrevista con el supervisor.
-                </strong>
-              }
               valorSeleccionado={datos.quiereMasInfo}
               onChange={(v) => actualizarCampo("quiereMasInfo", v)}
             />
