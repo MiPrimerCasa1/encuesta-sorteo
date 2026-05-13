@@ -280,9 +280,30 @@
 }
 
 .entrevista-selector__subtitulo {
-  font-size: 13px;
+  margin: 0;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.entrevista-selector__subtitulo-destaque {
+  font-size: clamp(17px, 5.2vw, 23px);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: var(--color-rojo);
+}
+
+.entrevista-selector__subtitulo-resto {
+  font-size: clamp(13px, 3.6vw, 15px);
   font-weight: 700;
   color: var(--color-negro);
+}
+
+.entrevista-selector--deshabilitado .entrevista-selector__subtitulo-destaque {
+  color: var(--color-gris-deshabilitado);
+}
+
+.entrevista-selector--deshabilitado .entrevista-selector__subtitulo-resto {
+  color: var(--color-gris-deshabilitado);
 }
 
 .entrevista-selector__modalidades {
