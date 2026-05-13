@@ -1,7 +1,9 @@
+import type { ReactNode } from "react";
+
 type Props = {
-  icono: React.ReactNode;
+  icono: ReactNode;
   pregunta: string;
-  hint?: string;
+  hint?: ReactNode;
   valorSeleccionado: "si" | "no" | "";
   onChange: (value: "si" | "no") => void;
 };

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 
-export type ModalidadEntrevista = "telefonica" | "sucursal" | "domicilio" | "";
+export type ModalidadEntrevista = "sucursal" | "domicilio" | "";
 
 type Props = {
   fechaSeleccionada: string;
@@ -118,12 +118,6 @@ function EntrevistaSelector({
     </svg>
   );
 
-  const iconoTelefono = (
-    <svg viewBox="0 0 24 24" fill="currentColor">
-      <path d="M6.6 10.8a15.6 15.6 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1.05-.25 11.4 11.4 0 0 0 3.55.6 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C9.4 21 3 14.6 3 7a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.6 3.55a1 1 0 0 1-.25 1.05L6.6 10.8Z" />
-    </svg>
-  );
-
   const iconoSucursal = (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 9.5 12 3l9 6.5V21H3V9.5Z" />
@@ -144,7 +138,6 @@ function EntrevistaSelector({
   );
 
   const MODALIDADES: { valor: ModalidadEntrevista; etiqueta: string; icono: ReactNode }[] = [
-    { valor: "telefonica", etiqueta: "Telefónica", icono: iconoTelefono },
     { valor: "sucursal", etiqueta: "En sucursal", icono: iconoSucursal },
     { valor: "domicilio", etiqueta: "En mi domicilio", icono: iconoDomicilio },
   ];
