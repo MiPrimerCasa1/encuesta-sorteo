@@ -374,18 +374,20 @@ function App() {
               valorSeleccionado={datos.quiereMasInfo}
               onChange={(v) => actualizarCampo("quiereMasInfo", v)}
             />
-            <EntrevistaSelector
-              fechaSeleccionada={datos.fechaEntrevista}
-              horaSeleccionada={datos.horaEntrevista}
-              modalidadSeleccionada={datos.modalidadEntrevista}
-              domicilioIngresado={datos.domicilioEntrevista}
-              onFechaChange={(v) => actualizarCampo("fechaEntrevista", v)}
-              onHoraChange={(v) => actualizarCampo("horaEntrevista", v)}
-              onModalidadChange={(v) => actualizarCampo("modalidadEntrevista", v)}
-              onDomicilioChange={(v) => actualizarCampo("domicilioEntrevista", v)}
-              deshabilitado={datos.quiereMasInfo !== "si"}
-              sucursalSupervisor={supervisorInfo.domicilioSucursal}
-            />
+            {datos.quiereMasInfo === "si" ? (
+              <EntrevistaSelector
+                fechaSeleccionada={datos.fechaEntrevista}
+                horaSeleccionada={datos.horaEntrevista}
+                modalidadSeleccionada={datos.modalidadEntrevista}
+                domicilioIngresado={datos.domicilioEntrevista}
+                onFechaChange={(v) => actualizarCampo("fechaEntrevista", v)}
+                onHoraChange={(v) => actualizarCampo("horaEntrevista", v)}
+                onModalidadChange={(v) => actualizarCampo("modalidadEntrevista", v)}
+                onDomicilioChange={(v) => actualizarCampo("domicilioEntrevista", v)}
+                deshabilitado={false}
+                sucursalSupervisor={supervisorInfo.domicilioSucursal}
+              />
+            ) : null}
 
             {errores.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
