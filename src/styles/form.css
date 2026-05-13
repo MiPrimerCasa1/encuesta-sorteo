@@ -945,10 +945,8 @@
 
 .sorpresa-card__btn-asesor {
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
   padding: 11px 18px;
   border-radius: var(--radio-input);
   background: var(--color-rojo);
@@ -961,17 +959,6 @@
   box-shadow: var(--sombra-rojo-suave);
   transition: opacity 0.15s ease;
   animation: sorpresa-fade-subir 0.55s 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.sorpresa-card__btn-asesor-linea {
-  line-height: 1.2;
-}
-
-.sorpresa-card__btn-asesor-num {
-  font-size: clamp(15px, 4.2vw, 18px);
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  line-height: 1.2;
 }
 
 .sorpresa-card__btn-asesor:hover {

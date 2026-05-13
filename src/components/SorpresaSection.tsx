@@ -32,8 +32,6 @@ function SorpresaSection({ telefonoAsesor }: Props) {
   }, []);
 
   const contacto = enlaceContactoAsesor(telefonoAsesor);
-  const telefonoLimpio = telefonoAsesor.trim();
-  const tieneTelefonoValido = telefonoLimpio.replace(/\D/g, "").length >= 8;
 
   return (
     <section className="sorpresa-card" aria-labelledby="sorpresa-heading">
@@ -87,10 +85,7 @@ function SorpresaSection({ telefonoAsesor }: Props) {
             target={contacto.externo ? "_blank" : undefined}
             rel={contacto.externo ? "noopener noreferrer" : undefined}
           >
-            <span className="sorpresa-card__btn-asesor-linea">{TEXTOS.sorpresaAsesorCta}</span>
-            {tieneTelefonoValido ? (
-              <span className="sorpresa-card__btn-asesor-num">{telefonoLimpio}</span>
-            ) : null}
+            {TEXTOS.sorpresaAsesorCta}
           </a>
         </div>
       ) : null}
