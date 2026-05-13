@@ -82,6 +82,7 @@ type SupervisorInfo = {
  * Teléfono del supervisor / vendedor para WhatsApp de la sección sorpresa.
  */
 const CLAVES_TELEFONO_SUPERVISOR = [
+  "supervisorCelular",
   "telefono_supervisor",
   "telefonoSupervisor",
   "tel_supervisor",
@@ -94,6 +95,7 @@ const CLAVES_TELEFONO_SUPERVISOR = [
 
 /** Domicilio de sucursal del supervisor (para modalidad "en sucursal" y campo8 del SP). */
 const CLAVES_DOMICILIO_SUCURSAL = [
+  "supervisorSucursalDireccion",
   "domicilio_sucursal",
   "domicilioSucursal",
   "domicilio_vendedor",
