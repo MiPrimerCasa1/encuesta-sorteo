@@ -10,13 +10,6 @@ import { z } from "zod";
 const app = express();
 const PORT = process.env.PORT || process.env.API_PORT || 3001;
 const SP_NAME = process.env.SP_NAME || "dbo.encuestaCargaSorteo01";
-/**
- * SP para obtener datos del promotor/supervisor.
- * Debe recibir @codigo (NVarChar) y devolver en el primer recordset:
- *   - telefono_supervisor (NVarChar): teléfono del supervisor para contacto WA
- *   - domicilio_sucursal  (NVarChar): dirección de la sucursal del supervisor
- */
-const SP_PROMOTOR = process.env.SP_PROMOTOR || "dbo.obtenerDatosPromotor";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -67,10 +60,37 @@ const encuestaSchema = z.object({
   codigoQr: z.string().trim().max(80).optional().default(""),
   mensajeWhatsapp: z.string().trim().max(100).optional().default(""),
   origen: z.string().trim().max(80).optional().default("whatsapp-encuesta-directa"),
+  /** Vienen del link de WhatsApp (query string), no de un SP. */
+  telefonoSupervisor: z.string().trim().max(50).optional().default(""),
+  domicilioSucursal: z.string().trim().max(250).optional().default(""),
 });
 
 function aMayusculas(valor) {
   return String(valor || "").trim().toUpperCase();
+}
+
+/**
+ * El SP espera la fecha y hora con el formato exacto "AAAA/MM/DD hh:mm".
+ * El front la envía en ISO "AAAA-MM-DDThh:mm".
+ */
+function aFormatoFechaSP(isoDateTime) {
+  if (!isoDateTime) return "";
+  const valor = String(isoDateTime).trim();
+  const [fecha, hora] = valor.split("T");
+  if (!fecha || !hora) return valor;
+  return `${fecha.replaceAll("-", "/")} ${hora}`;
+}
+
+/**
+ * El SP espera el modo de contacto como código numérico:
+ * 1 = telefónica, 2 = en sucursal, 3 = en domicilio del cliente.
+ */
+function modalidadACodigo(modalidad) {
+  const m = aMayusculas(modalidad);
+  if (m === "TELEFONICA") return "1";
+  if (m === "SUCURSAL") return "2";
+  if (m === "DOMICILIO") return "3";
+  return "";
 }
 
 function obtenerPrimeraFilaResultado(resultado) {
@@ -107,41 +127,6 @@ app.get("/api/health", async (_, res) => {
       ok: false,
       service: "survey-api",
       message: error instanceof Error ? error.message : "Error de conexion SQL Server",
-    });
-  }
-});
-
-/**
- * GET /api/promotor?codigo=SORTEO01_V1
- * Devuelve el teléfono del supervisor y la dirección de su sucursal.
- * El SP configurado en SP_PROMOTOR debe aceptar @codigo y retornar
- * las columnas telefono_supervisor y domicilio_sucursal.
- */
-app.get("/api/promotor", async (req, res) => {
-  const codigo = String(req.query.codigo || "").trim();
-  if (codigo.length < 2) {
-    return res.status(400).json({ message: "Código de promotor requerido." });
-  }
-
-  try {
-    const pool = await getPool();
-    const request = pool.request();
-    request.input("codigo", sql.NVarChar(100), codigo.toUpperCase());
-    const resultado = await request.execute(SP_PROMOTOR);
-    const fila = resultado.recordset?.[0] ?? resultado.recordsets?.[0]?.[0];
-
-    if (!fila) {
-      return res.status(404).json({ message: "Promotor no encontrado." });
-    }
-
-    return res.json({
-      telefonoSupervisor: String(fila.telefono_supervisor ?? fila.telefonoSupervisor ?? ""),
-      domicilioSucursal: String(fila.domicilio_sucursal ?? fila.domicilioSucursal ?? ""),
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Error al consultar datos del promotor.",
-      detail: error instanceof Error ? error.message : "Error desconocido",
     });
   }
 });
@@ -199,27 +184,31 @@ app.post("/api/survey", async (req, res) => {
     );
     request.input("campo5Codigo", sql.Int, 5);
     request.input("campo5Valor", sql.NVarChar(100), aMayusculas(mapaRespuestas.quiere_mas_info));
-    // campo6: fecha y hora de la entrevista (ISO: "2026-06-15T14:30")
+    // campo6: fecha y hora de la entrevista (formato "AAAA/MM/DD hh:mm")
     request.input("campo6Codigo", sql.Int, 6);
     request.input(
       "campo6Valor",
       sql.NVarChar(100),
-      mapaRespuestas.fecha_entrevista || ""
+      aFormatoFechaSP(mapaRespuestas.fecha_entrevista || "")
     );
-    // campo7: modalidad (TELEFONICA | SUCURSAL | DOMICILIO)
+    // campo7: modo de contacto como código (1=telefónica, 2=sucursal, 3=domicilio)
+    const codigoModalidad = modalidadACodigo(mapaRespuestas.modalidad_entrevista || "");
     request.input("campo7Codigo", sql.Int, 7);
-    request.input(
-      "campo7Valor",
-      sql.NVarChar(100),
-      aMayusculas(mapaRespuestas.modalidad_entrevista || "")
-    );
-    // campo8: domicilio del encuestado (solo cuando modalidad = DOMICILIO)
+    request.input("campo7Valor", sql.NVarChar(100), codigoModalidad);
+    /*
+     * campo8: depende del campo7
+     *   1 -> "" (telefónica)
+     *   2 -> dirección de la sucursal (viene en el link de WhatsApp, payload.domicilioSucursal)
+     *   3 -> domicilio del cliente (ingresado en el form)
+     */
+    let valorCampo8 = "";
+    if (codigoModalidad === "2") {
+      valorCampo8 = (payload.domicilioSucursal || "").trim();
+    } else if (codigoModalidad === "3") {
+      valorCampo8 = mapaRespuestas.domicilio_entrevista || "";
+    }
     request.input("campo8Codigo", sql.Int, 8);
-    request.input(
-      "campo8Valor",
-      sql.NVarChar(200),
-      mapaRespuestas.domicilio_entrevista || ""
-    );
+    request.input("campo8Valor", sql.NVarChar(200), valorCampo8);
 
     const resultado = await request.execute(SP_NAME);
     const totalAfectadas = (resultado.rowsAffected || []).reduce((acc, n) => acc + Number(n || 0), 0);

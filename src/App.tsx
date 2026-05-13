@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import BranchFooter from "./components/BranchFooter";
 import Header from "./components/Header";
 import QuestionCard from "./components/QuestionCard";
@@ -77,6 +77,40 @@ type SupervisorInfo = {
   domicilioSucursal: string;
 };
 
+/**
+ * Nombres posibles de query param en el link de WhatsApp (actualizar cuando el servidor defina los definitivos).
+ * Teléfono del supervisor / vendedor para WhatsApp de la sección sorpresa.
+ */
+const CLAVES_TELEFONO_SUPERVISOR = [
+  "telefono_supervisor",
+  "telefonoSupervisor",
+  "tel_supervisor",
+  "telSupervisor",
+  "telefono_vendedor",
+  "TelefonoVendedor",
+  "telefono_super",
+  "supervisor_telefono",
+];
+
+/** Domicilio de sucursal del supervisor (para modalidad "en sucursal" y campo8 del SP). */
+const CLAVES_DOMICILIO_SUCURSAL = [
+  "domicilio_sucursal",
+  "domicilioSucursal",
+  "domicilio_vendedor",
+  "DomicilioVendedor",
+  "direccion_sucursal",
+  "direccionSucursal",
+  "sucursal_domicilio",
+  "domicilio_supervisor",
+];
+
+function supervisorDesdeUrl(params: URLSearchParams): SupervisorInfo {
+  return {
+    telefonoSupervisor: obtenerParametro(params, CLAVES_TELEFONO_SUPERVISOR),
+    domicilioSucursal: obtenerParametro(params, CLAVES_DOMICILIO_SUCURSAL),
+  };
+}
+
 function App() {
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
 
@@ -99,7 +133,7 @@ function App() {
       ? "Vista previa: participación ya registrada."
       : ""
   );
-  const [supervisorInfo, setSupervisorInfo] = useState<SupervisorInfo | null>(null);
+  const supervisorInfo = useMemo(() => supervisorDesdeUrl(params), [params]);
 
   const codigoQr =
     obtenerParametro(params, ["codigo_qr", "qr_code", "wa_msg", "codigo", "Codigo"]) || "";
@@ -125,16 +159,6 @@ function App() {
   const mensajeWhatsapp = obtenerParametro(params, ["wa_msg", "codigo", "Codigo"]) || codigoQr;
   const telefono =
     obtenerParametro(params, ["telefono", "Telefono", "phone", "tel"]) || "";
-
-  useEffect(() => {
-    if (!codigoPromotor || codigoPromotor === "sin_codigo") return;
-    fetch(`/api/promotor?codigo=${encodeURIComponent(codigoPromotor)}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: SupervisorInfo | null) => {
-        if (data) setSupervisorInfo(data);
-      })
-      .catch(() => {});
-  }, [codigoPromotor]);
 
   /**
    * Tras enviar: siempre llevar la vista al mensaje principal (éxito o ya registrado),
@@ -233,6 +257,8 @@ function App() {
         telefono,
         mensajeWhatsapp,
         origen: "whatsapp-encuesta-directa",
+        telefonoSupervisor: supervisorInfo.telefonoSupervisor,
+        domicilioSucursal: supervisorInfo.domicilioSucursal,
       };
 
       const response = await fetch("/api/survey", {
