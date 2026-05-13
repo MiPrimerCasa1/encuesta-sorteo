@@ -15,34 +15,27 @@ type Props = {
   sucursalSupervisor?: string;
 };
 
-const HORARIOS: string[] = [];
-for (let h = 8; h <= 20; h++) {
-  HORARIOS.push(`${String(h).padStart(2, "0")}:00`);
-  if (h < 20) HORARIOS.push(`${String(h).padStart(2, "0")}:30`);
-}
+const HORARIOS = [
+  "08:30", "09:00", "10:00", "11:00", "12:00",
+  "16:30", "17:00", "18:00", "19:00", "20:00",
+];
 
-const DIAS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+const DIAS_SEMANA = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+const MESES_LARGO = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+];
+const MESES_CORTO = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
 
-function getProximasFechas(cantidad = 10): Array<{ valor: string; etiqueta: string }> {
-  const fechas: Array<{ valor: string; etiqueta: string }> = [];
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-  while (fechas.length < cantidad) {
-    if (d.getDay() !== 0) {
-      const valor = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-      fechas.push({ valor, etiqueta: `${DIAS[d.getDay()]} ${d.getDate()} ${MESES[d.getMonth()]}` });
-    }
-    d.setDate(d.getDate() + 1);
-  }
-  return fechas;
+function toValorFecha(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 function formatearFechaCorta(fechaStr: string): string {
   if (!fechaStr) return "FECHA";
   const [y, m, dia] = fechaStr.split("-").map(Number);
   const d = new Date(y, m - 1, dia);
-  return `${DIAS[d.getDay()]} ${d.getDate()} ${MESES[d.getMonth()]}`;
+  return `${DIAS_SEMANA[d.getDay()]} ${d.getDate()} ${MESES_CORTO[d.getMonth()]}`;
 }
 
 function EntrevistaSelector({
@@ -57,8 +50,12 @@ function EntrevistaSelector({
   deshabilitado,
   sucursalSupervisor,
 }: Props) {
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
   const claseContenedor = `entrevista-selector${deshabilitado ? " entrevista-selector--deshabilitado" : ""}`;
   const [menuFechaAbierto, setMenuFechaAbierto] = useState(false);
+  const [mesVista, setMesVista] = useState({ año: hoy.getFullYear(), mes: hoy.getMonth() });
   const menuFechaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -71,6 +68,46 @@ function EntrevistaSelector({
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [menuFechaAbierto]);
+
+  const esMesActual =
+    mesVista.año === hoy.getFullYear() && mesVista.mes === hoy.getMonth();
+
+  const irMesAnterior = () => {
+    if (esMesActual) return;
+    setMesVista((prev) => {
+      if (prev.mes === 0) return { año: prev.año - 1, mes: 11 };
+      return { ...prev, mes: prev.mes - 1 };
+    });
+  };
+
+  const irMesSiguiente = () => {
+    setMesVista((prev) => {
+      if (prev.mes === 11) return { año: prev.año + 1, mes: 0 };
+      return { ...prev, mes: prev.mes + 1 };
+    });
+  };
+
+  type Celda = { dia: number; fecha: string; pasado: boolean; esDomingo: boolean } | null;
+
+  const celdasCalendario = (): Celda[] => {
+    const { año, mes } = mesVista;
+    const primerDia = new Date(año, mes, 1);
+    const diasEnMes = new Date(año, mes + 1, 0).getDate();
+    const primerDiaSemana = primerDia.getDay();
+
+    const celdas: Celda[] = [];
+    for (let i = 0; i < primerDiaSemana; i++) celdas.push(null);
+    for (let d = 1; d <= diasEnMes; d++) {
+      const fecha = new Date(año, mes, d);
+      celdas.push({
+        dia: d,
+        fecha: toValorFecha(fecha),
+        pasado: fecha <= hoy,
+        esDomingo: fecha.getDay() === 0,
+      });
+    }
+    return celdas;
+  };
 
   const iconoCalendario = (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -121,62 +158,119 @@ function EntrevistaSelector({
         <p className="entrevista-selector__titulo">Acordá tu entrevista</p>
       </div>
 
-      <div className="entrevista-selector__fecha-hora">
-        <div className="entrevista-selector__campo">
-          <label className="entrevista-selector__label">Fecha</label>
-          <div className="fecha-picker" ref={menuFechaRef}>
-            <button
-              type="button"
-              className={`fecha-picker__btn${fechaSeleccionada ? " fecha-picker__btn--sel" : ""}${menuFechaAbierto ? " fecha-picker__btn--abierto" : ""}`}
-              onClick={() => { if (!deshabilitado) setMenuFechaAbierto((v) => !v); }}
-              disabled={deshabilitado}
-              aria-expanded={menuFechaAbierto}
-              aria-haspopup="listbox"
-            >
-              <span className="fecha-picker__icono-cal" aria-hidden="true">{iconoCalendario}</span>
-              <span className="fecha-picker__texto">
-                {fechaSeleccionada ? formatearFechaCorta(fechaSeleccionada) : "FECHA"}
-              </span>
-              <span className="fecha-picker__chevron" aria-hidden="true">▾</span>
-            </button>
-            {menuFechaAbierto && !deshabilitado && (
-              <div className="fecha-picker__menu" role="listbox" aria-label="Seleccioná una fecha">
-                {getProximasFechas(10).map(({ valor, etiqueta }) => (
-                  <button
-                    key={valor}
-                    type="button"
-                    role="option"
-                    aria-selected={fechaSeleccionada === valor}
-                    className={`fecha-picker__opcion${fechaSeleccionada === valor ? " fecha-picker__opcion--sel" : ""}`}
-                    onClick={() => { onFechaChange(valor); setMenuFechaAbierto(false); }}
+      {/* ── Fecha ── */}
+      <div className="entrevista-selector__campo">
+        <label className="entrevista-selector__label">Fecha</label>
+        <div className="fecha-picker" ref={menuFechaRef}>
+          <button
+            type="button"
+            className={`fecha-picker__btn${fechaSeleccionada ? " fecha-picker__btn--sel" : ""}${menuFechaAbierto ? " fecha-picker__btn--abierto" : ""}`}
+            onClick={() => { if (!deshabilitado) setMenuFechaAbierto((v) => !v); }}
+            disabled={deshabilitado}
+            aria-expanded={menuFechaAbierto}
+            aria-haspopup="dialog"
+          >
+            <span className="fecha-picker__icono-cal" aria-hidden="true">{iconoCalendario}</span>
+            <span className="fecha-picker__texto">
+              {fechaSeleccionada ? formatearFechaCorta(fechaSeleccionada) : "FECHA"}
+            </span>
+            <span className="fecha-picker__chevron" aria-hidden="true">▾</span>
+          </button>
+
+          {menuFechaAbierto && !deshabilitado && (
+            <div className="fecha-picker__calendar" role="dialog" aria-label="Seleccioná una fecha">
+              {/* Navegación de mes */}
+              <div className="fecha-picker__cal-nav">
+                <button
+                  type="button"
+                  className="fecha-picker__cal-nav-btn"
+                  onClick={irMesAnterior}
+                  disabled={esMesActual}
+                  aria-label="Mes anterior"
+                >
+                  ‹
+                </button>
+                <span className="fecha-picker__cal-mes-titulo">
+                  {MESES_LARGO[mesVista.mes]} {mesVista.año}
+                </span>
+                <button
+                  type="button"
+                  className="fecha-picker__cal-nav-btn"
+                  onClick={irMesSiguiente}
+                  aria-label="Mes siguiente"
+                >
+                  ›
+                </button>
+              </div>
+
+              {/* Headers días de la semana */}
+              <div className="fecha-picker__cal-semana">
+                {DIAS_SEMANA.map((d) => (
+                  <div
+                    key={d}
+                    className={`fecha-picker__cal-dia-header${d === "Dom" ? " fecha-picker__cal-dia-header--dom" : ""}`}
                   >
-                    {etiqueta}
-                  </button>
+                    {d}
+                  </div>
                 ))}
               </div>
-            )}
-          </div>
-        </div>
 
-        <div className="entrevista-selector__campo">
-          <label className="entrevista-selector__label" htmlFor="hora-contacto">
-            Hora de contacto
-          </label>
-          <select
-            id="hora-contacto"
-            className="entrevista-selector__select"
-            value={horaSeleccionada}
-            onChange={(e) => onHoraChange(e.target.value)}
-            disabled={deshabilitado}
-          >
-            <option value="">--:--</option>
-            {HORARIOS.map((h) => (
-              <option key={h} value={h}>{h} hs</option>
-            ))}
-          </select>
+              {/* Grilla de días */}
+              <div className="fecha-picker__cal-grid">
+                {celdasCalendario().map((celda, idx) => {
+                  if (!celda) {
+                    return <div key={`v-${idx}`} className="fecha-picker__cal-celda-vacia" />;
+                  }
+                  const { dia, fecha, pasado, esDomingo } = celda;
+                  const seleccionado = fechaSeleccionada === fecha;
+                  const inhabilitado = pasado || esDomingo;
+
+                  let cls = "fecha-picker__dia-btn";
+                  if (esDomingo) cls += " fecha-picker__dia-btn--domingo";
+                  else if (pasado) cls += " fecha-picker__dia-btn--pasado";
+                  else if (seleccionado) cls += " fecha-picker__dia-btn--sel";
+
+                  return (
+                    <button
+                      key={fecha}
+                      type="button"
+                      className={cls}
+                      disabled={inhabilitado}
+                      aria-pressed={seleccionado}
+                      onClick={() => {
+                        onFechaChange(fecha);
+                        setMenuFechaAbierto(false);
+                      }}
+                    >
+                      {dia}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* ── Hora de contacto ── */}
+      <div className="hora-picker">
+        <label className="hora-picker__titulo">Hora de contacto</label>
+        <div className="hora-picker__grid">
+          {HORARIOS.map((hora) => (
+            <button
+              key={hora}
+              type="button"
+              className={`hora-picker__btn${horaSeleccionada === hora && !deshabilitado ? " hora-picker__btn--sel" : ""}`}
+              disabled={deshabilitado}
+              onClick={() => onHoraChange(hora)}
+            >
+              {hora}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Modalidad ── */}
       <p className="entrevista-selector__subtitulo">¿Cómo preferís la entrevista?</p>
 
       <div className="entrevista-selector__modalidades">

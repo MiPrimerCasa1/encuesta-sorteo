@@ -215,6 +215,7 @@
 
 .entrevista-selector__fecha-hora {
   display: flex;
+  flex-direction: column;
   gap: var(--espacio-sm);
 }
 
@@ -222,14 +223,6 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-
-.entrevista-selector__campo:first-child {
-  flex: 3;
-}
-
-.entrevista-selector__campo:last-child {
-  flex: 2;
 }
 
 .entrevista-selector__label {
@@ -393,7 +386,68 @@
   box-shadow: 0 0 0 3px rgba(200, 17, 26, 0.12);
 }
 
-/* ---- Fecha picker (botón + menú desplegable) ---- */
+/* ── Hora picker (grilla de botones) ── */
+
+.hora-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hora-picker__titulo {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--color-rojo);
+}
+
+.entrevista-selector--deshabilitado .hora-picker__titulo {
+  color: var(--color-gris-deshabilitado);
+}
+
+.hora-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+}
+
+.hora-picker__btn {
+  padding: 9px 4px;
+  background: var(--color-blanco);
+  border: 2px solid var(--color-rojo);
+  border-radius: var(--radio-boton);
+  color: var(--color-rojo);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+
+.hora-picker__btn:hover:not(:disabled):not(.hora-picker__btn--sel) {
+  box-shadow: var(--sombra-rojo-suave);
+}
+
+.hora-picker__btn--sel {
+  background: var(--color-rojo);
+  color: var(--color-blanco);
+  box-shadow: var(--sombra-rojo-fuerte);
+}
+
+.hora-picker__btn:disabled {
+  border-color: var(--color-gris-deshabilitado);
+  color: var(--color-gris-deshabilitado);
+  background: var(--color-gris-fondo);
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ---- Fecha picker (botón + calendario desplegable) ---- */
 
 .fecha-picker {
   position: relative;
@@ -466,7 +520,9 @@
   transition: transform 0.15s ease;
 }
 
-.fecha-picker__menu {
+/* Calendario desplegable */
+
+.fecha-picker__calendar {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
@@ -476,46 +532,119 @@
   border: 2px solid var(--color-rojo);
   border-radius: var(--radio-boton);
   box-shadow: var(--sombra-rojo-fuerte);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  max-height: 260px;
-  overflow-y: auto;
+  padding: 10px;
+  min-width: 260px;
 }
 
-.fecha-picker__opcion {
-  padding: 10px 14px;
-  margin-top: 0;
-  background: var(--color-blanco);
+.fecha-picker__cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.fecha-picker__cal-mes-titulo {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--color-rojo);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fecha-picker__cal-nav-btn {
+  background: none;
   border: none;
-  border-bottom: 1px solid var(--color-gris-borde);
-  border-radius: 0;
-  color: var(--color-negro);
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  text-align: left;
+  color: var(--color-rojo);
+  font-size: 20px;
+  line-height: 1;
   cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: inherit;
   transition: background-color 0.1s ease;
 }
 
-.fecha-picker__opcion:last-child {
-  border-bottom: none;
-}
-
-.fecha-picker__opcion:hover {
+.fecha-picker__cal-nav-btn:hover:not(:disabled) {
   background: var(--color-rojo-suave);
 }
 
-.fecha-picker__opcion--sel {
-  background: var(--color-rojo);
-  color: var(--color-blanco);
-  font-weight: 800;
+.fecha-picker__cal-nav-btn:disabled {
+  color: var(--color-gris-deshabilitado);
+  cursor: not-allowed;
 }
 
-.fecha-picker__opcion--sel:hover {
-  background: var(--color-rojo-oscuro);
+.fecha-picker__cal-semana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.fecha-picker__cal-dia-header {
+  font-size: 9px;
+  font-weight: 800;
+  text-align: center;
+  color: var(--color-gris-texto);
+  text-transform: uppercase;
+  padding: 2px 0;
+}
+
+.fecha-picker__cal-dia-header--dom {
+  color: #333;
+}
+
+.fecha-picker__cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.fecha-picker__cal-celda-vacia {
+  /* spacer vacío */
+}
+
+/* Botón de día — estética igual a boton-opcion */
+.fecha-picker__dia-btn {
+  aspect-ratio: 1;
+  padding: 2px;
+  background: var(--color-blanco);
+  border: 2px solid var(--color-rojo);
+  border-radius: var(--radio-boton);
+  color: var(--color-rojo);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.fecha-picker__dia-btn:hover:not(:disabled):not(.fecha-picker__dia-btn--sel) {
+  box-shadow: var(--sombra-rojo-suave);
+}
+
+.fecha-picker__dia-btn--sel {
+  background: var(--color-rojo);
   color: var(--color-blanco);
+  box-shadow: var(--sombra-rojo-fuerte);
+}
+
+.fecha-picker__dia-btn--pasado {
+  background: var(--color-gris-fondo);
+  border-color: var(--color-gris-deshabilitado);
+  color: var(--color-gris-deshabilitado);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* Domingos: negro con número blanco, no seleccionable */
+.fecha-picker__dia-btn--domingo {
+  background: #111;
+  border-color: #111;
+  color: #fff;
+  cursor: not-allowed;
 }
 
 /* ---- fin EntrevistaSelector ---- */

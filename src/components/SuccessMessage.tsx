@@ -11,6 +11,7 @@ function SuccessMessage() {
       </span>
       <h2 className="success-card__titulo">Ya estás participando</h2>
       <p className="success-card__mensaje">
+       ¡Gracias! 
         Un asesor de Mi Primer Casa S.A. se pondrá en contacto en breve.
       </p>
     </div>
