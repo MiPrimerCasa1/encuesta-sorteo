@@ -286,9 +286,10 @@
 }
 
 .entrevista-selector__subtitulo-destaque {
-  font-size: clamp(17px, 5.2vw, 23px);
+  font-size: clamp(12px, 3.4vw, 15px);
   font-weight: 900;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--color-rojo);
 }
 
@@ -754,12 +755,10 @@
   font-size: 22px;
   font-weight: 800;
   color: var(--color-rojo);
-}
-
-.success-card__mensaje {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--color-gris-texto);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  margin: 0;
 }
 
 @keyframes sorpresa-logo-pulse {
@@ -1224,10 +1223,6 @@
 
   .sorpresa-card__titulo {
     font-size: 26px;
-  }
-
-  .success-card__mensaje {
-    font-size: 16px;
   }
 
   .success-card__icono-wrap {
