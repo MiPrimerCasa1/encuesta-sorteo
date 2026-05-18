@@ -1,8 +1,11 @@
-name: Deploy Frontend to GitHub Pages
+# Respaldo opcional en GitHub Pages (NO es producción).
+# Producción: deploy-vps.yml → VPS + dominio propio.
+# Este workflow solo corre manualmente; requiere Pages activado en:
+# https://github.com/MiPrimerCasa/encuesta-sorteo/settings/pages
+
+name: Deploy Frontend to GitHub Pages (manual)
 
 on:
-  push:
-    branches: ["main"]
   workflow_dispatch:
 
 permissions:
