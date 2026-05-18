@@ -410,12 +410,15 @@
 
 .entrevista-selector__fecha-hora-fila {
   display: flex;
-  gap: var(--espacio-sm);
+  justify-content: center;
+  gap: var(--espacio-xl);
 }
 
 .entrevista-selector__fecha-hora-fila .entrevista-selector__campo {
-  flex: 1;
-  min-width: 0;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* ── Hora picker (dropdown) ── */
@@ -424,19 +427,22 @@
 }
 
 .hora-picker__btn-selector {
-  width: 100%;
+  width: 110px;
+  height: 110px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 9px 10px;
+  justify-content: center;
+  gap: 5px;
+  padding: 0;
   margin-top: 0;
   background: var(--color-blanco);
   border: 2px solid var(--color-rojo);
-  border-radius: var(--radio-boton);
+  border-radius: 50%;
   color: var(--color-rojo);
   font-family: inherit;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   cursor: pointer;
@@ -467,15 +473,15 @@
 }
 
 .hora-picker__icono-rel {
-  width: 16px;
-  height: 16px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
   display: inline-flex;
 }
 
 .hora-picker__icono-rel svg {
-  width: 16px;
-  height: 16px;
+  width: 28px;
+  height: 28px;
   display: block;
 }
 
@@ -546,19 +552,22 @@
 }
 
 .fecha-picker__btn {
-  width: 100%;
+  width: 110px;
+  height: 110px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 9px 10px;
+  justify-content: center;
+  gap: 5px;
+  padding: 0;
   margin-top: 0;
   background: var(--color-blanco);
   border: 2px solid var(--color-rojo);
-  border-radius: var(--radio-boton);
+  border-radius: 50%;
   color: var(--color-rojo);
   font-family: inherit;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   cursor: pointer;
@@ -589,15 +598,15 @@
 }
 
 .fecha-picker__icono-cal {
-  width: 16px;
-  height: 16px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
   display: inline-flex;
 }
 
 .fecha-picker__icono-cal svg {
-  width: 16px;
-  height: 16px;
+  width: 28px;
+  height: 28px;
   display: block;
 }
 
