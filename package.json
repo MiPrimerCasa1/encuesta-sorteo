@@ -8,8 +8,9 @@
     "dev:api": "node server/index.js",
     "desarrollo": "vite",
     "desarrollo:api": "node server/index.js",
-    "build": "tsc && vite build",
-    "compilar": "tsc && vite build",
+    "optimize:logo": "node scripts/optimize-logo.mjs",
+    "build": "npm run optimize:logo && tsc && vite build",
+    "compilar": "npm run optimize:logo && tsc && vite build",
     "preview": "vite preview",
     "start": "node server/index.js",
     "start:api": "node server/index.js",
@@ -18,11 +19,13 @@
   "devDependencies": {
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "sharp": "^0.34.5",
     "typescript": "~6.0.2",
     "vite": "^8.0.10"
   },
   "dependencies": {
     "better-sqlite3": "^12.9.0",
+    "compression": "^1.8.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",

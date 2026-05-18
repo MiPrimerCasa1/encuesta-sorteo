@@ -1,4 +1,4 @@
-import { LOGO_URL, TEXTOS } from "../data/branding";
+import { LOGO_URL, LOGO_URL_FALLBACK, TEXTOS } from "../data/branding";
 
 interface Props {
   telefono: string;
@@ -10,7 +10,18 @@ function Header({ telefono, etiquetaPromotor }: Props) {
   return (
     <header className="header">
       <div className="header__logo-wrap">
-        <img className="header__logo" src={LOGO_URL} alt="Logo Mi Primer Casa S.A." />
+        <picture>
+          <source srcSet={LOGO_URL} type="image/webp" />
+          <img
+            className="header__logo"
+            src={LOGO_URL_FALLBACK}
+            alt="Logo Mi Primer Casa S.A."
+            width={280}
+            height={120}
+            decoding="async"
+            fetchPriority="high"
+          />
+        </picture>
       </div>
       <h1 className="header__titulo">{TEXTOS.tituloPrincipal}</h1>
       <span className="header__badge">{TEXTOS.badge}</span>

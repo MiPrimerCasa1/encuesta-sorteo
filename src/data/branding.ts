@@ -1,6 +1,6 @@
-import logoArreglado from "../assets/Logo-Arreglado (1).png";
-
-export const LOGO_URL = logoArreglado;
+/** Servido desde /public (no empaquetar ~600 KB en el bundle JS). */
+export const LOGO_URL = "/logo.webp";
+export const LOGO_URL_FALLBACK = "/logo-arreglado-1.png";
 
 export const TEXTOS = {
   tituloPrincipal: "MI PRIMER CASA S.A.",

@@ -1,4 +1,5 @@
 import "dotenv/config";
+import compression from "compression";
 import cors from "cors";
 import express from "express";
 import { existsSync } from "node:fs";
@@ -24,11 +25,13 @@ const sqlConfig = {
   options: {
     encrypt: process.env.DB_ENCRYPT === "true",
     trustServerCertificate: process.env.DB_TRUST_CERT !== "false",
+    connectTimeout: 15_000,
+    requestTimeout: 30_000,
   },
   pool: {
     max: 10,
-    min: 0,
-    idleTimeoutMillis: 30000,
+    min: 2,
+    idleTimeoutMillis: 30_000,
   },
 };
 
@@ -115,8 +118,9 @@ function extraerMensajeProcedimiento(resultado) {
   return "";
 }
 
+app.use(compression());
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "64kb" }));
 
 app.get("/api/health", async (_, res) => {
   try {
@@ -256,13 +260,37 @@ app.post("/api/survey", async (req, res) => {
 });
 
 if (existsSync(distPath)) {
-  app.use(express.static(distPath));
+  app.use(
+    express.static(distPath, {
+      setHeaders(res, filePath) {
+        if (filePath.includes(`${path.sep}assets${path.sep}`) || /\.[a-f0-9]{8,}\./i.test(filePath)) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        } else if (/\.(webp|png|jpg|jpeg|svg|ico|woff2?)$/i.test(filePath)) {
+          res.setHeader("Cache-Control", "public, max-age=604800");
+        } else {
+          res.setHeader("Cache-Control", "no-cache");
+        }
+      },
+    })
+  );
 
   app.get(/^(?!\/api).*/, (_req, res) => {
+    res.setHeader("Cache-Control", "no-cache");
     return res.sendFile(path.join(distPath, "index.html"));
   });
 }
 
+async function warmSqlPool() {
+  try {
+    await getPool();
+    console.log("Pool SQL Server listo");
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.warn("Pool SQL no disponible al arranque:", msg);
+  }
+}
+
 app.listen(PORT, () => {
   console.log(`App de encuestas ejecutandose en http://localhost:${PORT}`);
+  void warmSqlPool();
 });
