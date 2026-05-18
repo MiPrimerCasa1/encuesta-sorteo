@@ -57,6 +57,8 @@ function EntrevistaSelector({
   const [menuFechaAbierto, setMenuFechaAbierto] = useState(false);
   const [mesVista, setMesVista] = useState({ año: hoy.getFullYear(), mes: hoy.getMonth() });
   const menuFechaRef = useRef<HTMLDivElement>(null);
+  const [menuHoraAbierto, setMenuHoraAbierto] = useState(false);
+  const menuHoraRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!menuFechaAbierto) return;
@@ -68,6 +70,17 @@ function EntrevistaSelector({
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [menuFechaAbierto]);
+
+  useEffect(() => {
+    if (!menuHoraAbierto) return;
+    const handler = (e: MouseEvent) => {
+      if (menuHoraRef.current && !menuHoraRef.current.contains(e.target as Node)) {
+        setMenuHoraAbierto(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuHoraAbierto]);
 
   const esMesActual =
     mesVista.año === hoy.getFullYear() && mesVista.mes === hoy.getMonth();
@@ -118,6 +131,13 @@ function EntrevistaSelector({
     </svg>
   );
 
+  const iconoReloj = (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 3" />
+    </svg>
+  );
+
   const iconoSucursal = (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 9.5 12 3l9 6.5V21H3V9.5Z" />
@@ -151,116 +171,143 @@ function EntrevistaSelector({
         <p className="entrevista-selector__titulo">Acordá tu entrevista</p>
       </div>
 
-      {/* ── Fecha ── */}
-      <div className="entrevista-selector__campo">
-        <label className="entrevista-selector__label">Fecha</label>
-        <div className="fecha-picker" ref={menuFechaRef}>
-          <button
-            type="button"
-            className={`fecha-picker__btn${fechaSeleccionada ? " fecha-picker__btn--sel" : ""}${menuFechaAbierto ? " fecha-picker__btn--abierto" : ""}`}
-            onClick={() => { if (!deshabilitado) setMenuFechaAbierto((v) => !v); }}
-            disabled={deshabilitado}
-            aria-expanded={menuFechaAbierto}
-            aria-haspopup="dialog"
-          >
-            <span className="fecha-picker__icono-cal" aria-hidden="true">{iconoCalendario}</span>
-            <span className="fecha-picker__texto">
-              {fechaSeleccionada ? formatearFechaCorta(fechaSeleccionada) : "FECHA"}
-            </span>
-            <span className="fecha-picker__chevron" aria-hidden="true">▾</span>
-          </button>
+      {/* ── Fecha y Hora ── */}
+      <div className="entrevista-selector__fecha-hora-fila">
 
-          {menuFechaAbierto && !deshabilitado && (
-            <div className="fecha-picker__calendar" role="dialog" aria-label="Seleccioná una fecha">
-              {/* Navegación de mes */}
-              <div className="fecha-picker__cal-nav">
-                <button
-                  type="button"
-                  className="fecha-picker__cal-nav-btn"
-                  onClick={irMesAnterior}
-                  disabled={esMesActual}
-                  aria-label="Mes anterior"
-                >
-                  ‹
-                </button>
-                <span className="fecha-picker__cal-mes-titulo">
-                  {MESES_LARGO[mesVista.mes]} {mesVista.año}
-                </span>
-                <button
-                  type="button"
-                  className="fecha-picker__cal-nav-btn"
-                  onClick={irMesSiguiente}
-                  aria-label="Mes siguiente"
-                >
-                  ›
-                </button>
-              </div>
+        {/* Fecha */}
+        <div className="entrevista-selector__campo">
+          <label className="entrevista-selector__label">Fecha</label>
+          <div className="fecha-picker" ref={menuFechaRef}>
+            <button
+              type="button"
+              className={`fecha-picker__btn${fechaSeleccionada ? " fecha-picker__btn--sel" : ""}${menuFechaAbierto ? " fecha-picker__btn--abierto" : ""}`}
+              onClick={() => { if (!deshabilitado) setMenuFechaAbierto((v) => !v); }}
+              disabled={deshabilitado}
+              aria-expanded={menuFechaAbierto}
+              aria-haspopup="dialog"
+            >
+              <span className="fecha-picker__icono-cal" aria-hidden="true">{iconoCalendario}</span>
+              <span className="fecha-picker__texto">
+                {fechaSeleccionada ? formatearFechaCorta(fechaSeleccionada) : "FECHA"}
+              </span>
+              <span className="fecha-picker__chevron" aria-hidden="true">▾</span>
+            </button>
 
-              {/* Headers días de la semana */}
-              <div className="fecha-picker__cal-semana">
-                {DIAS_SEMANA.map((d) => (
-                  <div
-                    key={d}
-                    className={`fecha-picker__cal-dia-header${d === "Dom" ? " fecha-picker__cal-dia-header--dom" : ""}`}
+            {menuFechaAbierto && !deshabilitado && (
+              <div className="fecha-picker__calendar" role="dialog" aria-label="Seleccioná una fecha">
+                <div className="fecha-picker__cal-nav">
+                  <button
+                    type="button"
+                    className="fecha-picker__cal-nav-btn"
+                    onClick={irMesAnterior}
+                    disabled={esMesActual}
+                    aria-label="Mes anterior"
                   >
-                    {d}
-                  </div>
-                ))}
+                    ‹
+                  </button>
+                  <span className="fecha-picker__cal-mes-titulo">
+                    {MESES_LARGO[mesVista.mes]} {mesVista.año}
+                  </span>
+                  <button
+                    type="button"
+                    className="fecha-picker__cal-nav-btn"
+                    onClick={irMesSiguiente}
+                    aria-label="Mes siguiente"
+                  >
+                    ›
+                  </button>
+                </div>
+
+                <div className="fecha-picker__cal-semana">
+                  {DIAS_SEMANA.map((d) => (
+                    <div
+                      key={d}
+                      className={`fecha-picker__cal-dia-header${d === "Dom" ? " fecha-picker__cal-dia-header--dom" : ""}`}
+                    >
+                      {d}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="fecha-picker__cal-grid">
+                  {celdasCalendario().map((celda, idx) => {
+                    if (!celda) {
+                      return <div key={`v-${idx}`} className="fecha-picker__cal-celda-vacia" />;
+                    }
+                    const { dia, fecha, pasado, esDomingo } = celda;
+                    const seleccionado = fechaSeleccionada === fecha;
+                    const inhabilitado = pasado || esDomingo;
+
+                    let cls = "fecha-picker__dia-btn";
+                    if (esDomingo) cls += " fecha-picker__dia-btn--domingo";
+                    else if (pasado) cls += " fecha-picker__dia-btn--pasado";
+                    else if (seleccionado) cls += " fecha-picker__dia-btn--sel";
+
+                    return (
+                      <button
+                        key={fecha}
+                        type="button"
+                        className={cls}
+                        disabled={inhabilitado}
+                        aria-pressed={seleccionado}
+                        onClick={() => {
+                          onFechaChange(fecha);
+                          setMenuFechaAbierto(false);
+                        }}
+                      >
+                        {dia}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
+            )}
+          </div>
+        </div>
 
-              {/* Grilla de días */}
-              <div className="fecha-picker__cal-grid">
-                {celdasCalendario().map((celda, idx) => {
-                  if (!celda) {
-                    return <div key={`v-${idx}`} className="fecha-picker__cal-celda-vacia" />;
-                  }
-                  const { dia, fecha, pasado, esDomingo } = celda;
-                  const seleccionado = fechaSeleccionada === fecha;
-                  const inhabilitado = pasado || esDomingo;
+        {/* Hora */}
+        <div className="entrevista-selector__campo">
+          <label className="entrevista-selector__label">Hora</label>
+          <div className="hora-picker" ref={menuHoraRef}>
+            <button
+              type="button"
+              className={`hora-picker__btn-selector${horaSeleccionada ? " hora-picker__btn-selector--sel" : ""}${menuHoraAbierto ? " hora-picker__btn-selector--abierto" : ""}`}
+              onClick={() => { if (!deshabilitado) setMenuHoraAbierto((v) => !v); }}
+              disabled={deshabilitado}
+              aria-expanded={menuHoraAbierto}
+              aria-haspopup="listbox"
+            >
+              <span className="hora-picker__icono-rel" aria-hidden="true">{iconoReloj}</span>
+              <span className="hora-picker__texto">
+                {horaSeleccionada || "HORA"}
+              </span>
+              <span className="hora-picker__chevron" aria-hidden="true">▾</span>
+            </button>
 
-                  let cls = "fecha-picker__dia-btn";
-                  if (esDomingo) cls += " fecha-picker__dia-btn--domingo";
-                  else if (pasado) cls += " fecha-picker__dia-btn--pasado";
-                  else if (seleccionado) cls += " fecha-picker__dia-btn--sel";
-
-                  return (
+            {menuHoraAbierto && !deshabilitado && (
+              <div className="hora-picker__dropdown" role="listbox" aria-label="Seleccioná un horario">
+                <div className="hora-picker__grid">
+                  {HORARIOS.map((hora) => (
                     <button
-                      key={fecha}
+                      key={hora}
                       type="button"
-                      className={cls}
-                      disabled={inhabilitado}
-                      aria-pressed={seleccionado}
+                      className={`hora-picker__btn${horaSeleccionada === hora ? " hora-picker__btn--sel" : ""}`}
+                      role="option"
+                      aria-selected={horaSeleccionada === hora}
                       onClick={() => {
-                        onFechaChange(fecha);
-                        setMenuFechaAbierto(false);
+                        onHoraChange(hora);
+                        setMenuHoraAbierto(false);
                       }}
                     >
-                      {dia}
+                      {hora}
                     </button>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* ── Hora de contacto ── */}
-      <div className="hora-picker">
-        <label className="hora-picker__titulo">Hora de contacto</label>
-        <div className="hora-picker__grid">
-          {HORARIOS.map((hora) => (
-            <button
-              key={hora}
-              type="button"
-              className={`hora-picker__btn${horaSeleccionada === hora && !deshabilitado ? " hora-picker__btn--sel" : ""}`}
-              disabled={deshabilitado}
-              onClick={() => onHoraChange(hora)}
-            >
-              {hora}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* ── Modalidad ── */}
