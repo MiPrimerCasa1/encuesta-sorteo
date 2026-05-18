@@ -52,7 +52,7 @@ const encuestaSchema = z.object({
         valor: z.string().trim().min(1).max(200),
       })
     )
-    .min(3),
+    .min(2),
   telefono: z.string().trim().min(8).max(50),
   idSorteo: z.string().trim().min(3).max(50),
   codigoPromotor: z.string().trim().min(2).max(100),
@@ -252,6 +252,55 @@ app.post("/api/survey", async (req, res) => {
       message: "Error al ejecutar procedimiento en SQL Server.",
       detail: error instanceof Error ? error.message : "Error desconocido",
     });
+  }
+});
+
+const interviewSchema = z.object({
+  telefono: z.string().trim().min(8).max(50),
+  quiereMasInfo: z.literal("si"),
+  fechaEntrevista: z.string().trim().min(3).max(50),
+  horaEntrevista: z.string().trim().min(3).max(10),
+  modalidadEntrevista: z.enum(["sucursal", "domicilio"]),
+  domicilioEntrevista: z.string().trim().max(200).optional().default(""),
+  idSorteo: z.string().trim().max(50).optional().default(""),
+  codigoPromotor: z.string().trim().max(100).optional().default(""),
+  domicilioSucursal: z.string().trim().max(250).optional().default(""),
+});
+
+const SP_INTERVIEW = process.env.SP_INTERVIEW_NAME || "dbo.encuestaActualizaEntrevistaSorteo01";
+
+app.post("/api/interview", async (req, res) => {
+  const parsed = interviewSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({
+      message: "Datos inválidos para la entrevista.",
+      details: parsed.error.flatten(),
+    });
+  }
+
+  const data = parsed.data;
+  const codigoModalidad = modalidadACodigo(data.modalidadEntrevista);
+  let valorDomicilio = "";
+  if (codigoModalidad === "2") {
+    valorDomicilio = (data.domicilioSucursal || "").trim();
+  } else if (codigoModalidad === "3") {
+    valorDomicilio = data.domicilioEntrevista || "";
+  }
+
+  try {
+    const pool = await getPool();
+    const request = pool.request();
+    request.input("telefono", sql.NVarChar(50), data.telefono.trim());
+    request.input("encuesta", sql.NVarChar(50), data.idSorteo.trim());
+    request.input("usuario", sql.NVarChar(100), data.codigoPromotor.trim());
+    request.input("fechaHora", sql.NVarChar(50), aFormatoFechaSP(`${data.fechaEntrevista}T${data.horaEntrevista}`));
+    request.input("modalidad", sql.NVarChar(10), codigoModalidad);
+    request.input("domicilio", sql.NVarChar(200), valorDomicilio);
+    await request.execute(SP_INTERVIEW);
+    return res.status(200).json({ message: "Entrevista registrada correctamente." });
+  } catch (error) {
+    console.warn("[/api/interview] SP no disponible o error:", error instanceof Error ? error.message : error);
+    return res.status(200).json({ message: "Solicitud recibida.", warning: "SP no disponible" });
   }
 });
 

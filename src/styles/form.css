@@ -1065,6 +1065,49 @@
   white-space: pre-wrap;
 }
 
+.felicidades-card {
+  background: var(--color-blanco);
+  border-radius: var(--radio-card);
+  padding: var(--espacio-xl) var(--espacio-lg);
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  box-shadow: var(--sombra-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-md);
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.felicidades-card__icono-wrap {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.felicidades-card__icono {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.felicidades-card__titulo {
+  font-size: 20px;
+  font-weight: 800;
+  color: #16a34a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  margin: 0;
+}
+
 /* ---- Pantallas muy pequeñas (< 360px) ---- */
 @media (max-width: 359px) {
   .text-input {
