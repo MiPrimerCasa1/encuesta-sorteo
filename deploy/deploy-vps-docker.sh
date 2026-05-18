@@ -41,7 +41,7 @@ sleep 15
 docker ps --filter name=encuesta-landingqr --format 'Estado: {{.Status}}' | tee -a "$LOG_FILE"
 
 log "Smoke test HTTPS (Traefik)"
-if curl -sf -H "Host: ${ENCUESTA_HOST}" https://127.0.0.1/ -o /dev/null -w "Landing HTTP %{http_code}\n" | tee -a "$LOG_FILE"; then
+if curl -sfk -H "Host: ${ENCUESTA_HOST}" https://127.0.0.1/ -o /dev/null -w "Landing HTTP %{http_code}\n" | tee -a "$LOG_FILE"; then
   log "OK: landing responde"
 else
   log "ERROR: landing no respondió"
