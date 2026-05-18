@@ -1,3 +1,5 @@
+# Producción principal: VPS + .github/workflows/deploy-vps.yml (push a main).
+# Render queda como respaldo; desactivar autoDeploy si migraste DNS al VPS.
 services:
   - type: web
     name: encuesta-mi-primera-casa
@@ -5,4 +7,4 @@ services:
     plan: free
     buildCommand: npm ci && npm run build
     startCommand: npm run start
-    autoDeploy: true
+    autoDeploy: false

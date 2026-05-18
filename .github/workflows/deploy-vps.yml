@@ -1,0 +1,74 @@
+# Autodeploy al VPS — logs por commit en Actions (como Render).
+# Secrets: VPS_HOST, VPS_USER, VPS_SSH_KEY
+# Notificaciones: GitHub → Settings → Notifications → Actions (éxito/fallo por email)
+
+name: Deploy to VPS (production)
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-vps-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://www.miprimercasafsa-sorteo.com
+
+    steps:
+      - name: Checkout (metadatos del commit)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Info del deploy
+        run: |
+          echo "## Deploy VPS" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Campo | Valor |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Commit | [\`${{ github.sha }}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Autor | ${{ github.actor }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Mensaje | ${{ github.event.head_commit.message }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Hora (UTC) | $(date -u '+%Y-%m-%d %H:%M:%S') |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Los logs del build en el VPS aparecen abajo en el paso **Deploy via SSH**." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.2
+        env:
+          DEPLOY_SHA: ${{ github.sha }}
+          DEPLOY_REF: ${{ github.ref_name }}
+          DEPLOY_ACTOR: ${{ github.actor }}
+          DEPLOY_MESSAGE: ${{ github.event.head_commit.message }}
+          DEPLOY_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: DEPLOY_SHA,DEPLOY_REF,DEPLOY_ACTOR,DEPLOY_MESSAGE,DEPLOY_RUN_URL
+          script_stop: true
+          script: |
+            export DEPLOY_SHA DEPLOY_REF DEPLOY_ACTOR DEPLOY_MESSAGE DEPLOY_RUN_URL
+            bash /opt/encuesta-landingqr/deploy/deploy-vps-docker.sh
+
+      - name: Deploy completado
+        if: success()
+        run: |
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Estado: desplegado en VPS" >> "$GITHUB_STEP_SUMMARY"
+          echo "URL: https://www.miprimercasafsa-sorteo.com" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Revisa el historial en **Actions** o en el servidor: \`logs/deployments/\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Deploy fallido
+        if: failure()
+        run: |
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Estado: falló el deploy" >> "$GITHUB_STEP_SUMMARY"
+          echo "Revisa el paso **Deploy via SSH** para ver el error." >> "$GITHUB_STEP_SUMMARY"
