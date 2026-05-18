@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { SORTEOS_HISTORIAL } from "../data/sorteosHistorial";
 import { TEXTOS } from "../data/branding";
 
@@ -43,7 +44,23 @@ const iconoCamara = (
   </svg>
 );
 
+const iconoImagen = (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.75"
+    aria-hidden="true"
+  >
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <circle cx="8.5" cy="8.5" r="1.5" />
+    <path d="M21 15l-5-5L5 21" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 function SorteosHistorial() {
+  const [fotoAbierta, setFotoAbierta] = useState<number | null>(null);
+
   return (
     <section
       className="sorteos-historial footer__seccion"
@@ -66,19 +83,44 @@ function SorteosHistorial() {
                 {iconoCalendario}
                 <span className="sorteos-historial__año">{item.año}</span>
               </div>
-              <a
-                className="sorteos-historial__btn-fotos"
-                href={item.fotosUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <span className="sorteos-historial__btn-fotos-icono" aria-hidden="true">
-                  {iconoCamara}
-                </span>
-                {TEXTOS.historialSorteosBtnFotos}
-              </a>
+              <div className="sorteos-historial__acciones">
+                {item.fotoGanador && (
+                  <button
+                    type="button"
+                    className={`sorteos-historial__btn-foto${fotoAbierta === item.año ? " sorteos-historial__btn-foto--activo" : ""}`}
+                    onClick={() =>
+                      setFotoAbierta(fotoAbierta === item.año ? null : item.año)
+                    }
+                  >
+                    <span className="sorteos-historial__btn-foto-icono" aria-hidden="true">
+                      {iconoImagen}
+                    </span>
+                    {fotoAbierta === item.año ? "Cerrar foto" : "Ver foto"}
+                  </button>
+                )}
+                <a
+                  className="sorteos-historial__btn-fotos"
+                  href={item.fotosUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span className="sorteos-historial__btn-fotos-icono" aria-hidden="true">
+                    {iconoCamara}
+                  </span>
+                  {TEXTOS.historialSorteosBtnFotos}
+                </a>
+              </div>
             </div>
             <p className="sorteos-historial__detalle">{item.detalle}</p>
+            {item.fotoGanador && fotoAbierta === item.año && (
+              <div className="sorteos-historial__foto-wrap">
+                <img
+                  src={item.fotoGanador}
+                  alt={`Ganador del sorteo ${item.año}`}
+                  className="sorteos-historial__foto"
+                />
+              </div>
+            )}
           </li>
         ))}
       </ul>

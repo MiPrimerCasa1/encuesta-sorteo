@@ -201,6 +201,72 @@
   height: 18px;
 }
 
+.sorteos-historial__acciones {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sorteos-historial__btn-foto {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  border-radius: var(--radio-input);
+  border: 2px solid var(--color-rojo);
+  background: var(--color-rojo);
+  color: var(--color-blanco);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-family: inherit;
+  cursor: pointer;
+  line-height: 1.25;
+  margin-top: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sorteos-historial__btn-foto:hover {
+  background: var(--color-rojo-oscuro);
+  border-color: var(--color-rojo-oscuro);
+}
+
+.sorteos-historial__btn-foto--activo {
+  background: var(--color-blanco);
+  color: var(--color-rojo);
+}
+
+.sorteos-historial__btn-foto--activo:hover {
+  background: var(--color-rojo-suave);
+  border-color: var(--color-rojo);
+}
+
+.sorteos-historial__btn-foto-icono {
+  display: inline-flex;
+}
+
+.sorteos-historial__btn-foto-icono svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.sorteos-historial__foto-wrap {
+  border-radius: var(--radio-input);
+  overflow: hidden;
+  line-height: 0;
+}
+
+.sorteos-historial__foto {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radio-input);
+}
+
 /* Aclaración legal */
 .footer__aclaracion {
   font-size: 11px;
