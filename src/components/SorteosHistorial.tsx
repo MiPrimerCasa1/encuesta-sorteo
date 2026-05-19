@@ -83,19 +83,28 @@ function SorteosHistorial() {
                 <span className="sorteos-historial__año">{item.año}</span>
               </div>
               <div className="sorteos-historial__acciones">
-                <button
-                  type="button"
-                  className={`sorteos-historial__btn-fotos${fotoAbierta === item.año ? " sorteos-historial__btn-fotos--activo" : ""}`}
-                  onClick={() =>
-                    setFotoAbierta(fotoAbierta === item.año ? null : item.año)
-                  }
-                  aria-expanded={fotoAbierta === item.año}
-                >
-                  <span className="sorteos-historial__btn-fotos-icono" aria-hidden="true">
-                    {fotoAbierta === item.año ? iconoCerrar : iconoCamara}
+                {item.fotoGanador ? (
+                  <button
+                    type="button"
+                    className={`sorteos-historial__btn-fotos${fotoAbierta === item.año ? " sorteos-historial__btn-fotos--activo" : ""}`}
+                    onClick={() =>
+                      setFotoAbierta(fotoAbierta === item.año ? null : item.año)
+                    }
+                    aria-expanded={fotoAbierta === item.año}
+                  >
+                    <span className="sorteos-historial__btn-fotos-icono" aria-hidden="true">
+                      {fotoAbierta === item.año ? iconoCerrar : iconoCamara}
+                    </span>
+                    {fotoAbierta === item.año ? "Cerrar fotos" : TEXTOS.historialSorteosBtnFotos}
+                  </button>
+                ) : (
+                  <span className="sorteos-historial__btn-fotos sorteos-historial__btn-fotos--pronto">
+                    <span className="sorteos-historial__btn-fotos-icono" aria-hidden="true">
+                      {iconoCamara}
+                    </span>
+                    Fotos próximamente
                   </span>
-                  {fotoAbierta === item.año ? "Cerrar fotos" : TEXTOS.historialSorteosBtnFotos}
-                </button>
+                )}
               </div>
             </div>
             <p className="sorteos-historial__detalle">{item.detalle}</p>

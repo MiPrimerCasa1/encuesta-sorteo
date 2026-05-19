@@ -180,6 +180,12 @@
   background: var(--color-rojo-suave);
 }
 
+.sorteos-historial__btn-fotos--pronto {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
+
 .sorteos-historial__btn-fotos--activo {
   background: var(--color-rojo);
   color: var(--color-blanco);
