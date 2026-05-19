@@ -1,9 +1,11 @@
-/** Premios entregados por año; `fotosUrl` apunta al álbum o publicación con fotos de ganadores. */
+import ganador2024 from "../assets/ganador-2024.jpg";
+import ganador2025 from "../assets/ganador-2025.jpg";
+import ganador2026 from "../assets/ganador-2026.jpg";
+
 export type SorteoHistorialItem = {
   año: number;
   detalle: string;
-  fotosUrl: string;
-  fotoGanador?: string;
+  fotoGanador: string;
 };
 
 export const SORTEOS_HISTORIAL: SorteoHistorialItem[] = [
@@ -11,21 +13,18 @@ export const SORTEOS_HISTORIAL: SorteoHistorialItem[] = [
     año: 2024,
     detalle:
       "Premios: dos terrenos y un automóvil 0 km y 5 millones de pesos en efectivo.",
-    fotosUrl: "https://www.instagram.com/miprimercasaok/",
-    fotoGanador: "/ganador-2024.jpg",
+    fotoGanador: ganador2024,
   },
   {
     año: 2025,
     detalle:
       "Premios: un terreno; tres motos 110 cc; televisores y heladeras.",
-    fotosUrl: "https://www.instagram.com/miprimercasaok/",
-    fotoGanador: "/ganador-2025.jpg",
+    fotoGanador: ganador2025,
   },
   {
     año: 2026,
     detalle:
       "Premios: dos motos 110 cc; aires acondicionados; televisores y motos eléctricas.",
-    fotosUrl: "https://www.instagram.com/miprimercasaok/",
-    fotoGanador: "/ganador-2026.jpg",
+    fotoGanador: ganador2026,
   },
 ];

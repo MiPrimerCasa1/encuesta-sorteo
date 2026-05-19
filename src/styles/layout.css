@@ -180,6 +180,20 @@
   background: var(--color-rojo-suave);
 }
 
+.sorteos-historial__btn-fotos--activo {
+  background: var(--color-rojo);
+  color: var(--color-blanco);
+}
+
+.sorteos-historial__btn-fotos--activo .sorteos-historial__btn-fotos-icono {
+  color: var(--color-blanco);
+}
+
+.sorteos-historial__btn-fotos--activo:hover {
+  background: var(--color-rojo-oscuro);
+  border-color: var(--color-rojo-oscuro);
+}
+
 .sorteos-historial__btn-fotos:focus-visible {
   outline: 2px solid var(--color-rojo);
   outline-offset: 3px;
