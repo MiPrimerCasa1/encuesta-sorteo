@@ -1065,6 +1065,17 @@
   white-space: pre-wrap;
 }
 
+.banner-demo {
+  width: 100%;
+  background: #f59e0b;
+  color: #1a1a1a;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  padding: 8px var(--espacio-md);
+  letter-spacing: 0.03em;
+}
+
 .felicidades-card {
   background: var(--color-blanco);
   border-radius: var(--radio-card);

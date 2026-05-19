@@ -33,6 +33,18 @@ const ESTADO_INICIAL: FormData = {
   domicilioEntrevista: "",
 };
 
+const ESTADO_DEMO: FormData = {
+  nombreCompleto: "Juan Pérez (DEMO)",
+  barrio: "Barrio Centro",
+  conoceFirma: "si",
+  conoceCuota55000: "no",
+  quiereMasInfo: "",
+  fechaEntrevista: "",
+  horaEntrevista: "",
+  modalidadEntrevista: "",
+  domicilioEntrevista: "",
+};
+
 function obtenerCodigoPromotor(codigoCrudo: string): string {
   const coincidencia = codigoCrudo.toLowerCase().match(/_v(\d{1,2})$/);
   return coincidencia ? `v${coincidencia[1]}` : "sin_codigo";
@@ -120,7 +132,10 @@ function App() {
     params.get("preview") === "registrado" &&
     !previewEnviado;
 
-  const [datos, setDatos] = useState<FormData>(ESTADO_INICIAL);
+  /** ?demo=1 → pre-llena el formulario y simula envío sin tocar la BD. */
+  const modoDemo = params.get("demo") === "1";
+
+  const [datos, setDatos] = useState<FormData>(modoDemo ? ESTADO_DEMO : ESTADO_INICIAL);
   const [errores, setErrores] = useState<string[]>([]);
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(previewEnviado);
@@ -158,8 +173,9 @@ function App() {
     params.get("sorteo_nombre") ??
     formatearNombreSorteo(idSorteo);
   const mensajeWhatsapp = obtenerParametro(params, ["wa_msg", "codigo", "Codigo"]) || codigoQr;
-  const telefono =
-    obtenerParametro(params, ["telefono", "Telefono", "phone", "tel"]) || "";
+  const telefono = modoDemo
+    ? "5491100000000"
+    : obtenerParametro(params, ["telefono", "Telefono", "phone", "tel"]) || "";
 
   /**
    * Tras enviar: siempre llevar la vista al mensaje principal (éxito o ya registrado),
@@ -212,6 +228,14 @@ function App() {
     setErrorEnvio("");
     setMensajeYaRegistrado("");
     if (!validar()) return;
+
+    if (modoDemo) {
+      setEnviando(true);
+      await new Promise((r) => setTimeout(r, 800));
+      setEnviando(false);
+      setEnviado(true);
+      return;
+    }
 
     try {
       setEnviando(true);
@@ -394,6 +418,11 @@ function App() {
   return (
     <div className="app-container">
       <Header telefono={telefono} etiquetaPromotor={etiquetaPromotor} />
+      {modoDemo && (
+        <div className="banner-demo" role="status">
+          ⚠️ MODO DEMO — el envío no guarda datos reales
+        </div>
+      )}
 
       {enviado ? (
         <>
