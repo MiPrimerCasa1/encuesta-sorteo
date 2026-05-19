@@ -61,6 +61,27 @@ function obtenerParametro(params: URLSearchParams, claves: string[]): string {
     const valor = params.get(clave);
     if (valor && valor.trim()) return valor.trim();
   }
+  const clavesLower = new Set(claves.map((c) => c.toLowerCase()));
+  for (const [key, value] of params.entries()) {
+    if (clavesLower.has(key.toLowerCase()) && value.trim()) return value.trim();
+  }
+  return "";
+}
+
+/** Teléfono del supervisor (WhatsApp). Nunca usar el celular del participante. */
+function telefonoSupervisorDesdeUrl(params: URLSearchParams): string {
+  const directo = obtenerParametro(params, CLAVES_TELEFONO_SUPERVISOR);
+  if (directo) return directo;
+  for (const [key, value] of params.entries()) {
+    const k = key.toLowerCase();
+    if (!value.trim()) continue;
+    if (
+      k.includes("supervisor") &&
+      (k.includes("celular") || k.includes("telefono") || k.includes("tel"))
+    ) {
+      return value.trim();
+    }
+  }
   return "";
 }
 
@@ -79,10 +100,15 @@ type SupervisorInfo = {
 
 const CLAVES_TELEFONO_SUPERVISOR = [
   "supervisorCelular",
+  "SupervisorCelular",
+  "supervisor_celular",
   "telefono_supervisor",
   "telefonoSupervisor",
+  "TelefonoSupervisor",
   "tel_supervisor",
   "telSupervisor",
+  "celular_supervisor",
+  "celularSupervisor",
   "telefono_vendedor",
   "TelefonoVendedor",
   "telefono_super",
@@ -103,7 +129,7 @@ const CLAVES_DOMICILIO_SUCURSAL = [
 
 function supervisorDesdeUrl(params: URLSearchParams): SupervisorInfo {
   return {
-    telefonoSupervisor: obtenerParametro(params, CLAVES_TELEFONO_SUPERVISOR),
+    telefonoSupervisor: telefonoSupervisorDesdeUrl(params),
     domicilioSucursal: obtenerParametro(params, CLAVES_DOMICILIO_SUCURSAL),
   };
 }
@@ -331,9 +357,7 @@ function App() {
       {enviado ? (
         <>
           <SuccessMessage />
-          <SorpresaSection
-            telefonoAsesor={supervisorInfo.telefonoSupervisor || telefono}
-          />
+          <SorpresaSection telefonoAsesor={supervisorInfo.telefonoSupervisor} />
         </>
       ) : mensajeYaRegistrado ? (
         <YaRegistradoMessage mensaje={mensajeYaRegistrado} />
