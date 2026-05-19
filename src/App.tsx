@@ -47,7 +47,7 @@ const ESTADO_DEMO: FormData = {
 
 function obtenerCodigoPromotor(codigoCrudo: string): string {
   const coincidencia = codigoCrudo.toLowerCase().match(/_v(\d{1,2})$/);
-  return coincidencia ? `v${coincidencia[1]}` : "sin_codigo";
+  return coincidencia ? `v${coincidencia[1]}` : "3939393939";
 }
 
 function obtenerIdSorteo(codigoCrudo: string): string {
