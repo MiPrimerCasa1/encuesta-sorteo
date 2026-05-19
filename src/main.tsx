@@ -5,6 +5,7 @@ import "./styles/global.css";
 import "./styles/layout.css";
 import "./styles/buttons.css";
 import "./styles/form.css";
+import "./styles/dts.css";
 
 const rootElement = document.getElementById("app");
 
