@@ -1,0 +1,30 @@
+# Pegar en: api.slack.com/apps → Create New App → From an app manifest
+_metadata:
+  major_version: 2
+  minor_version: 1
+
+display_information:
+  name: VPS Encuesta
+  description: Consultar estado del servidor de la encuesta con el comando /vps
+  background_color: "#1a5f2a"
+
+features:
+  bot_user:
+    display_name: vps-encuesta
+    always_online: false
+  slash_commands:
+    - command: /vps
+      url: https://slack-vps.srv955546.hstgr.cloud/slack/vps
+      description: Estado del VPS (Docker, disco, API, commit)
+      usage_hint: help
+      should_escape: false
+
+oauth_config:
+  scopes:
+    bot:
+      - commands
+
+settings:
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false

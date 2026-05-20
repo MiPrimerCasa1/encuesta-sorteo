@@ -1,0 +1,31 @@
+# Bot Slack /vps — requiere socket Docker (solo lectura) y script de métricas en el host.
+# Levantar: docker compose -f /root/docker-compose.yml -f /opt/encuesta-landingqr/deploy/docker-compose.slack-vps-bot.yml up -d
+services:
+  slack-vps-bot:
+    build:
+      context: /opt/encuesta-landingqr/deploy/slack-vps-bot
+      dockerfile: Dockerfile
+    container_name: slack-vps-bot
+    restart: unless-stopped
+    env_file:
+      - /opt/encuesta-landingqr/deploy/slack-vps-bot/.env
+    environment:
+      PORT: "3099"
+      VPS_STATUS_SCRIPT: /opt/encuesta-landingqr/deploy/vps-status-collect.sh
+      APP_DIR: /opt/encuesta-landingqr
+      HEALTH_URL: http://encuesta-landingqr:3001/api/health
+    volumes:
+      - /opt/encuesta-landingqr:/opt/encuesta-landingqr:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    expose:
+      - "3099"
+    networks:
+      - default
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=root_default
+      - traefik.http.routers.slackvps.rule=Host(`slack-vps.srv955546.hstgr.cloud`)
+      - traefik.http.routers.slackvps.entrypoints=web,websecure
+      - traefik.http.routers.slackvps.tls=true
+      - traefik.http.routers.slackvps.tls.certresolver=mytlschallenge
+      - traefik.http.services.slackvps.loadbalancer.server.port=3099
