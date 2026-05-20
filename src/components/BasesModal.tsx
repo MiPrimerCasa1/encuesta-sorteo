@@ -28,19 +28,19 @@ function BasesModal({ onClose }: Props) {
 
           <div className="bases-sheet__seccion">
             <h3 className="bases-sheet__subtitulo">1. Organización</h3>
-            <p>El sorteo es organizado por <strong>MI PRIMER CASA S.A.</strong>, empresa dedicada a la venta de terrenos y propiedades.</p>
+            <p>Este evento es organizado por <strong>MI PRIMER CASA S.A.</strong>, CUIT 30-71785280-6, ubicada en Fotheringham 1089, empresa dedicada a la venta de terrenos y propiedades. Cuyo propósito es captar clientes y optimizar la rentabilidad.</p>
           </div>
 
           <div className="bases-sheet__seccion">
             <h3 className="bases-sheet__subtitulo">2. Participación gratuita</h3>
-            <p>La participación es completamente <strong>gratuita</strong>. Solo debés completar la encuesta con tu número de celular. No es obligatorio realizar ninguna compra para participar ni para ganar los premios extra.</p>
+            <p>La participación es completamente <strong>gratuita</strong>. Solo debés completar la encuesta con tu número de celular, el cual se tomará y será válido para el evento. Sin obligación de compra para participar y para ganar los premios.</p>
           </div>
 
           <div className="bases-sheet__seccion">
             <h3 className="bases-sheet__subtitulo">3. Premios</h3>
             <ul className="bases-sheet__lista">
-              <li><strong>Premio Principal:</strong> Un terreno 10×30 m sobre avenida. Para recibir este premio, el ganador deberá abonar la suscripción del plan de financiamiento vigente.</li>
-              <li><strong>Premio Extra:</strong> 1 (una) moto 110 cc y 2 (dos) motos eléctricas. Se entregan sin cargo adicional.</li>
+              <li><strong>Premio Principal:</strong> Un terreno 10×30 m sobre avenida.</li>
+              <li><strong>Premios Extras:</strong> 1 (una) moto 110 cc y 2 (dos) motos eléctricas. Se entregan sin cargo adicional.</li>
             </ul>
           </div>
 
@@ -51,22 +51,22 @@ function BasesModal({ onClose }: Props) {
 
           <div className="bases-sheet__seccion">
             <h3 className="bases-sheet__subtitulo">5. Mecánica</h3>
-            <p>Participan todas las personas que hayan completado la encuesta con un número de celular válido. El ganador será seleccionado al azar entre todos los participantes registrados.</p>
+            <p>Participan todas las personas <strong>mayores de 18 años</strong> que hayan completado la encuesta con un número de celular válido. El ganador será seleccionado al azar entre todos los participantes registrados.</p>
           </div>
 
           <div className="bases-sheet__seccion">
             <h3 className="bases-sheet__subtitulo">6. Descuento exclusivo</h3>
-            <p>Los participantes acceden a un descuento de <strong>hasta el 40%</strong> en productos seleccionados de MI PRIMER CASA S.A., sin obligación de compra.</p>
+            <p>Los participantes acceden a un descuento de <strong>hasta el 40%</strong> en productos seleccionados de MI PRIMER CASA S.A.</p>
           </div>
 
           <div className="bases-sheet__seccion">
             <h3 className="bases-sheet__subtitulo">7. Financiamiento</h3>
-            <p>El valor de referencia de la cuota es de <strong>$55.000 mensuales (CUOTAS FIJAS)</strong>, que incluye pilares y alcantarilla. Los valores están sujetos a actualización sin previo aviso.</p>
+            <p>El valor de referencia de la cuota es de <strong>$55.000 mensuales (CUOTAS FIJAS)</strong>. Si el participante adquiere esta promoción, el terreno incluye pilar y alcantarillas. Los valores están sujetos a actualización sin previo aviso.</p>
           </div>
 
           <div className="bases-sheet__seccion">
             <h3 className="bases-sheet__subtitulo">8. Notificación al ganador</h3>
-            <p>El ganador será contactado al número de celular registrado dentro de las <strong>48 horas</strong> posteriores al sorteo.</p>
+            <p>El ganador será contactado al número de celular registrado.</p>
           </div>
 
           <div className="bases-sheet__seccion">
@@ -76,7 +76,7 @@ function BasesModal({ onClose }: Props) {
 
           <div className="bases-sheet__seccion">
             <h3 className="bases-sheet__subtitulo">10. Datos personales</h3>
-            <p>Los datos recopilados se utilizarán exclusivamente para la gestión del sorteo y comunicaciones de MI PRIMER CASA S.A. No serán compartidos con terceros.</p>
+            <p>Los datos proporcionados se utilizarán exclusivamente para la gestión del sorteo y comunicaciones de MI PRIMER CASA S.A. No serán compartidos con terceros.</p>
           </div>
 
           <p className="bases-sheet__pie">La participación en el sorteo implica la aceptación de estas bases y condiciones.</p>
