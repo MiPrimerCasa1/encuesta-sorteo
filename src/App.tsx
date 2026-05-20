@@ -136,6 +136,7 @@ function App() {
   const [entrevistaEnviando, setEntrevistaEnviando] = useState(false);
   const [entrevistaError, setEntrevistaError] = useState("");
   const [erroresEntrevista, setErroresEntrevista] = useState<string[]>([]);
+  const [participacionGuardada, setParticipacionGuardada] = useState(false);
   const supervisorInfo = useMemo(
     () => supervisorDesdeUrl(params, searchCrudo),
     [params, searchCrudo]
@@ -214,6 +215,100 @@ function App() {
     return erroresNuevos.length === 0;
   };
 
+  const enviarEncuestaALaApi = async (
+    quiereMasInfo: "si" | "no"
+  ): Promise<{ ok: boolean; yaRegistrado: boolean; message?: string }> => {
+    const respuestas: Array<{ codigoPregunta: string; valor: string }> = [
+      { codigoPregunta: "conoce_firma", valor: datos.conoceFirma },
+      { codigoPregunta: "conoce_cuota_55000", valor: datos.conoceCuota55000 },
+      { codigoPregunta: "quiere_mas_info", valor: quiereMasInfo },
+    ];
+    if (quiereMasInfo === "si") {
+      respuestas.push(
+        {
+          codigoPregunta: "fecha_entrevista",
+          valor: `${datos.fechaEntrevista}T${datos.horaEntrevista}`,
+        },
+        { codigoPregunta: "modalidad_entrevista", valor: datos.modalidadEntrevista },
+        { codigoPregunta: "domicilio_entrevista", valor: datos.domicilioEntrevista },
+      );
+    }
+
+    const payload = {
+      participante: {
+        nombreCompleto: datos.nombreCompleto,
+        barrio: datos.barrio,
+      },
+      respuestas,
+      codigoPromotor,
+      idSorteo,
+      nombreSorteo,
+      codigoQr,
+      telefono,
+      mensajeWhatsapp,
+      origen: "whatsapp-encuesta-directa",
+      telefonoSupervisor: supervisorInfo.telefonoSupervisor,
+      domicilioSucursal: supervisorInfo.domicilioSucursal,
+    };
+
+    const response = await fetch("/api/survey", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    });
+    const body = (await response.json().catch(() => ({}))) as {
+      message?: string;
+      code?: string;
+    };
+
+    if (response.status === 409 || body.code === "ALREADY_REGISTERED") {
+      return {
+        ok: false,
+        yaRegistrado: true,
+        message:
+          body.message?.trim() ||
+          "Este teléfono ya fue registrado en esta encuesta.",
+      };
+    }
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        yaRegistrado: false,
+        message: body.message ?? "No pudimos enviar la encuesta. Intentá nuevamente.",
+      };
+    }
+
+    return { ok: true, yaRegistrado: false, message: body.message };
+  };
+
+  /** Segundo paso: actualiza campo5–8 vía SP (telefono + encuesta). */
+  const actualizarAsesoramientoEnApi = async (): Promise<{ ok: boolean; message?: string }> => {
+    const response = await fetch("/api/interview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        telefono,
+        quiereMasInfo: "si",
+        fechaEntrevista: datos.fechaEntrevista,
+        horaEntrevista: datos.horaEntrevista,
+        modalidadEntrevista: datos.modalidadEntrevista,
+        domicilioEntrevista: datos.domicilioEntrevista,
+        idSorteo,
+        domicilioSucursal: supervisorInfo.domicilioSucursal,
+      }),
+    });
+    const body = (await response.json().catch(() => ({}))) as { message?: string };
+    if (!response.ok) {
+      return {
+        ok: false,
+        message: body.message ?? "No pudimos guardar tu respuesta de asesoramiento.",
+      };
+    }
+    return { ok: true, message: body.message };
+  };
+
   const handleSubmit = async () => {
     setErrorEnvio("");
     setMensajeYaRegistrado("");
@@ -223,57 +318,26 @@ function App() {
       setEnviando(true);
       await new Promise((r) => setTimeout(r, 800));
       setEnviando(false);
+      setParticipacionGuardada(true);
       setEnviado(true);
       return;
     }
 
     try {
       setEnviando(true);
-      const respuestas: Array<{ codigoPregunta: string; valor: string }> = [
-        { codigoPregunta: "conoce_firma", valor: datos.conoceFirma },
-        { codigoPregunta: "conoce_cuota_55000", valor: datos.conoceCuota55000 },
-        { codigoPregunta: "quiere_mas_info", valor: "no" },
-      ];
-
-      const payload = {
-        participante: {
-          nombreCompleto: datos.nombreCompleto,
-          barrio: datos.barrio,
-        },
-        respuestas,
-        codigoPromotor,
-        idSorteo,
-        nombreSorteo,
-        codigoQr,
-        telefono,
-        mensajeWhatsapp,
-        origen: "whatsapp-encuesta-directa",
-        telefonoSupervisor: supervisorInfo.telefonoSupervisor,
-        domicilioSucursal: supervisorInfo.domicilioSucursal,
-      };
-
-      const response = await fetch("/api/survey", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        keepalive: true,
-      });
-      const body = (await response.json().catch(() => ({}))) as {
-        message?: string;
-        code?: string;
-      };
-
-      if (response.status === 409 || body.code === "ALREADY_REGISTERED") {
+      const resultado = await enviarEncuestaALaApi("no");
+      if (resultado.yaRegistrado) {
         setMensajeYaRegistrado(
-          body.message?.trim() ||
-            "Este teléfono ya fue registrado en esta encuesta."
+          resultado.message ?? "Este teléfono ya fue registrado en esta encuesta."
         );
+        setParticipacionGuardada(true);
+        setEnviado(true);
         return;
       }
-
-      if (!response.ok) {
-        throw new Error(body.message ?? "No pudimos enviar la encuesta. Intentá nuevamente.");
+      if (!resultado.ok) {
+        throw new Error(resultado.message ?? "No pudimos enviar la encuesta. Intentá nuevamente.");
       }
+      setParticipacionGuardada(true);
       setEnviado(true);
     } catch (error) {
       setErrorEnvio(error instanceof Error ? error.message : "Error inesperado al enviar.");
@@ -283,6 +347,11 @@ function App() {
   };
 
   const handleConfirmarEntrevista = async () => {
+    if (datos.quiereMasInfo !== "si") {
+      setEntrevistaError("Seleccioná que querés asesoramiento para confirmar la entrevista.");
+      return;
+    }
+
     const nuevosErrores: string[] = [];
     if (!datos.fechaEntrevista) nuevosErrores.push("Seleccioná la fecha de la entrevista.");
     if (!datos.horaEntrevista) nuevosErrores.push("Seleccioná la hora de la entrevista.");
@@ -293,31 +362,28 @@ function App() {
     setErroresEntrevista(nuevosErrores);
     if (nuevosErrores.length > 0) return;
 
+    if (modoDemo) {
+      setEntrevistaConfirmada(true);
+      return;
+    }
+
+    if (!participacionGuardada) {
+      setEntrevistaError("Primero tenés que enviar la encuesta.");
+      return;
+    }
+
     setEntrevistaEnviando(true);
     setEntrevistaError("");
     try {
-      const response = await fetch("/api/interview", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          telefono,
-          quiereMasInfo: "si",
-          fechaEntrevista: datos.fechaEntrevista,
-          horaEntrevista: datos.horaEntrevista,
-          modalidadEntrevista: datos.modalidadEntrevista,
-          domicilioEntrevista: datos.domicilioEntrevista,
-          idSorteo,
-          codigoPromotor,
-          domicilioSucursal: supervisorInfo.domicilioSucursal,
-        }),
-      });
-      const body = (await response.json().catch(() => ({}))) as { message?: string };
-      if (!response.ok) {
-        throw new Error(body.message ?? "No pudimos registrar la entrevista.");
+      const resultado = await actualizarAsesoramientoEnApi();
+      if (!resultado.ok) {
+        throw new Error(resultado.message ?? "No pudimos registrar la entrevista.");
       }
       setEntrevistaConfirmada(true);
     } catch (error) {
-      setEntrevistaError(error instanceof Error ? error.message : "Error al registrar la entrevista.");
+      setEntrevistaError(
+        error instanceof Error ? error.message : "Error al registrar la entrevista."
+      );
     } finally {
       setEntrevistaEnviando(false);
     }

@@ -11,6 +11,9 @@ import { z } from "zod";
 const app = express();
 const PORT = process.env.PORT || process.env.API_PORT || 3001;
 const SP_NAME = process.env.SP_NAME || "dbo.encuestaCargaSorteo01";
+const SP_INTERVIEW =
+  process.env.SP_INTERVIEW_NAME || "dbo.encuestaActualizaEntrevistaSorteo01";
+const ENCUESTA_TABLE = process.env.ENCUESTA_TABLE_NAME || "encuesta";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -85,8 +88,8 @@ function aFormatoFechaSP(isoDateTime) {
 }
 
 /**
- * El SP espera el modo de contacto como código numérico:
- * 1 = telefónica, 2 = en sucursal, 3 = en domicilio del cliente.
+ * Modo de contacto (campo7): 1 = teléfono cliente, 2 = en sucursal, 3 = domicilio cliente.
+ * campo8: vacío si 1; sucursal supervisor si 2; domicilio cliente si 3.
  */
 function modalidadACodigo(modalidad) {
   const m = aMayusculas(modalidad);
@@ -116,6 +119,168 @@ function extraerMensajeProcedimiento(resultado) {
     }
   }
   return "";
+}
+
+function evaluarResultadoSp(resultado) {
+  const totalAfectadas = (resultado.rowsAffected || []).reduce((acc, n) => acc + Number(n || 0), 0);
+  const primeraFila = obtenerPrimeraFilaResultado(resultado);
+  const codigoResultado =
+    primeraFila && typeof primeraFila === "object" && "codigo" in primeraFila
+      ? Number(primeraFila.codigo)
+      : null;
+  const mensajeDb = extraerMensajeProcedimiento(resultado);
+  const mensajeNormalizado = aMayusculas(mensajeDb);
+  const yaRegistradoPorCodigo = codigoResultado === 0;
+  const yaRegistradoPorMensaje =
+    mensajeNormalizado.includes("YA") &&
+    (mensajeNormalizado.includes("REGISTR") ||
+      mensajeNormalizado.includes("DUPLIC") ||
+      mensajeNormalizado.includes("EXISTE"));
+  const yaRegistradoPorSinInsert = resultado.returnValue === 0 && totalAfectadas === 0;
+
+  return {
+    totalAfectadas,
+    mensajeDb,
+    yaRegistrado:
+      yaRegistradoPorCodigo || yaRegistradoPorMensaje || yaRegistradoPorSinInsert,
+    resultado,
+  };
+}
+
+async function ejecutarEncuestaCarga(pool, payload) {
+  const mapaRespuestas = Object.fromEntries(
+    payload.respuestas.map((item) => [item.codigoPregunta, item.valor])
+  );
+
+  const request = pool.request();
+  request.input("telefono", sql.NVarChar(50), payload.telefono.trim());
+  request.input("encuesta", sql.NVarChar(50), payload.idSorteo.trim());
+  request.input("usuario", sql.NVarChar(100), payload.codigoPromotor.trim());
+
+  request.input("campo1Codigo", sql.Int, 1);
+  request.input("campo1Valor", sql.NVarChar(100), payload.participante.nombreCompleto.trim());
+  request.input("campo2Codigo", sql.Int, 2);
+  request.input("campo2Valor", sql.NVarChar(100), payload.participante.barrio.trim());
+  request.input("campo3Codigo", sql.Int, 3);
+  request.input("campo3Valor", sql.NVarChar(100), aMayusculas(mapaRespuestas.conoce_firma));
+  request.input("campo4Codigo", sql.Int, 4);
+  request.input(
+    "campo4Valor",
+    sql.NVarChar(100),
+    aMayusculas(mapaRespuestas.conoce_cuota_55000)
+  );
+  request.input("campo5Codigo", sql.Int, 5);
+  request.input("campo5Valor", sql.NVarChar(100), aMayusculas(mapaRespuestas.quiere_mas_info));
+  request.input("campo6Codigo", sql.Int, 6);
+  request.input(
+    "campo6Valor",
+    sql.NVarChar(100),
+    aFormatoFechaSP(mapaRespuestas.fecha_entrevista || "")
+  );
+  const codigoModalidad = modalidadACodigo(mapaRespuestas.modalidad_entrevista || "");
+  request.input("campo7Codigo", sql.Int, 7);
+  request.input("campo7Valor", sql.NVarChar(100), codigoModalidad);
+  let valorCampo8 = "";
+  if (codigoModalidad === "2") {
+    valorCampo8 = (payload.domicilioSucursal || "").trim();
+  } else if (codigoModalidad === "3") {
+    valorCampo8 = mapaRespuestas.domicilio_entrevista || "";
+  }
+  request.input("campo8Codigo", sql.Int, 8);
+  request.input("campo8Valor", sql.NVarChar(200), valorCampo8);
+
+  const resultado = await request.execute(SP_NAME);
+  return evaluarResultadoSp(resultado);
+}
+
+function nombreTablaEncuestaSeguro(nombre) {
+  const limpio = String(nombre || "encuesta").trim();
+  if (!/^[a-zA-Z0-9_.]+$/.test(limpio)) {
+    throw new Error("ENCUESTA_TABLE_NAME inválido");
+  }
+  return limpio.includes(".") ? limpio : `dbo.${limpio}`;
+}
+
+function armarCamposEntrevista(data) {
+  const quiereMasInfo = aMayusculas(data.quiereMasInfo);
+  const codigoModalidad = modalidadACodigo(data.modalidadEntrevista || "");
+  let valorCampo8 = "";
+  if (codigoModalidad === "2") {
+    valorCampo8 = (data.domicilioSucursal || "").trim();
+  } else if (codigoModalidad === "3") {
+    valorCampo8 = data.domicilioEntrevista || "";
+  }
+  const fechaHora =
+    data.fechaEntrevista && data.horaEntrevista
+      ? aFormatoFechaSP(`${data.fechaEntrevista}T${data.horaEntrevista}`)
+      : "";
+
+  return {
+    quiereMasInfo,
+    fechaHora,
+    codigoModalidad,
+    valorCampo8,
+  };
+}
+
+async function ejecutarEncuestaActualizacion(pool, data) {
+  const { quiereMasInfo, fechaHora, codigoModalidad, valorCampo8 } = armarCamposEntrevista(data);
+  const tabla = nombreTablaEncuestaSeguro(ENCUESTA_TABLE);
+
+  try {
+    const request = pool.request();
+    request.input("telefono", sql.NVarChar(50), data.telefono.trim());
+    request.input("encuesta", sql.NVarChar(50), data.idSorteo.trim());
+    request.input("campo5Valor", sql.NVarChar(100), quiereMasInfo);
+    request.input("campo6Valor", sql.NVarChar(100), fechaHora);
+    request.input("campo7Valor", sql.NVarChar(100), codigoModalidad);
+    request.input("campo8Valor", sql.NVarChar(200), valorCampo8);
+    const resultado = await request.execute(SP_INTERVIEW);
+    return { ok: true, via: "sp", resultado };
+  } catch (spError) {
+    console.warn(
+      "[actualizar entrevista] SP falló, intento UPDATE directo:",
+      spError instanceof Error ? spError.message : spError
+    );
+  }
+
+  async function intentarUpdate(camposSql) {
+    const req = pool.request();
+    req.input("telefono", sql.NVarChar(50), data.telefono.trim());
+    req.input("encuesta", sql.NVarChar(50), data.idSorteo.trim());
+    req.input("campo5Valor", sql.NVarChar(100), quiereMasInfo);
+    req.input("campo6Valor", sql.NVarChar(100), fechaHora);
+    req.input("campo7Valor", sql.NVarChar(100), codigoModalidad);
+    req.input("campo8Valor", sql.NVarChar(200), valorCampo8);
+    const update = await req.query(`
+      UPDATE ${tabla}
+      SET ${camposSql}
+      WHERE telefono = @telefono AND encuesta = @encuesta
+    `);
+    const filas = update.rowsAffected?.[0] ?? 0;
+    if (filas === 0) {
+      throw new Error("No se encontró el registro de la encuesta para actualizar la entrevista.");
+    }
+    return filas;
+  }
+
+  try {
+    const filas = await intentarUpdate(`
+      campo5Valor = @campo5Valor,
+      campo6Valor = @campo6Valor,
+      campo7Valor = @campo7Valor,
+      campo8Valor = @campo8Valor`);
+    return { ok: true, via: "update", filas };
+  } catch (updateError) {
+    const msg = updateError instanceof Error ? updateError.message : String(updateError);
+    if (!/campo7|campo8|Invalid column/i.test(msg)) {
+      throw updateError;
+    }
+    const filas = await intentarUpdate(
+      `campo5Valor = @campo5Valor, campo6Valor = @campo6Valor`
+    );
+    return { ok: true, via: "update-partial", filas };
+  }
 }
 
 app.use(compression());
@@ -168,70 +333,9 @@ app.post("/api/survey", async (req, res) => {
 
   try {
     const pool = await getPool();
-    const request = pool.request();
+    const { yaRegistrado, mensajeDb, resultado } = await ejecutarEncuestaCarga(pool, payload);
 
-    request.input("telefono", sql.NVarChar(50), payload.telefono.trim());
-    request.input("encuesta", sql.NVarChar(50), payload.idSorteo.trim());
-    request.input("usuario", sql.NVarChar(100), payload.codigoPromotor.trim());
-
-    request.input("campo1Codigo", sql.Int, 1);
-    request.input("campo1Valor", sql.NVarChar(100), payload.participante.nombreCompleto.trim());
-    request.input("campo2Codigo", sql.Int, 2);
-    request.input("campo2Valor", sql.NVarChar(100), payload.participante.barrio.trim());
-    request.input("campo3Codigo", sql.Int, 3);
-    request.input("campo3Valor", sql.NVarChar(100), aMayusculas(mapaRespuestas.conoce_firma));
-    request.input("campo4Codigo", sql.Int, 4);
-    request.input(
-      "campo4Valor",
-      sql.NVarChar(100),
-      aMayusculas(mapaRespuestas.conoce_cuota_55000)
-    );
-    request.input("campo5Codigo", sql.Int, 5);
-    request.input("campo5Valor", sql.NVarChar(100), aMayusculas(mapaRespuestas.quiere_mas_info));
-    // campo6: fecha y hora de la entrevista (formato "AAAA/MM/DD hh:mm")
-    request.input("campo6Codigo", sql.Int, 6);
-    request.input(
-      "campo6Valor",
-      sql.NVarChar(100),
-      aFormatoFechaSP(mapaRespuestas.fecha_entrevista || "")
-    );
-    // campo7: modo de contacto como código (1=telefónica, 2=sucursal, 3=domicilio)
-    const codigoModalidad = modalidadACodigo(mapaRespuestas.modalidad_entrevista || "");
-    request.input("campo7Codigo", sql.Int, 7);
-    request.input("campo7Valor", sql.NVarChar(100), codigoModalidad);
-    /*
-     * campo8: depende del campo7
-     *   1 -> "" (telefónica)
-     *   2 -> dirección de la sucursal (viene en el link de WhatsApp, payload.domicilioSucursal)
-     *   3 -> domicilio del cliente (ingresado en el form)
-     */
-    let valorCampo8 = "";
-    if (codigoModalidad === "2") {
-      valorCampo8 = (payload.domicilioSucursal || "").trim();
-    } else if (codigoModalidad === "3") {
-      valorCampo8 = mapaRespuestas.domicilio_entrevista || "";
-    }
-    request.input("campo8Codigo", sql.Int, 8);
-    request.input("campo8Valor", sql.NVarChar(200), valorCampo8);
-
-    const resultado = await request.execute(SP_NAME);
-    const totalAfectadas = (resultado.rowsAffected || []).reduce((acc, n) => acc + Number(n || 0), 0);
-    const primeraFila = obtenerPrimeraFilaResultado(resultado);
-    const codigoResultado =
-      primeraFila && typeof primeraFila === "object" && "codigo" in primeraFila
-        ? Number(primeraFila.codigo)
-        : null;
-    const mensajeDb = extraerMensajeProcedimiento(resultado);
-    const mensajeNormalizado = aMayusculas(mensajeDb);
-    const yaRegistradoPorCodigo = codigoResultado === 0;
-    const yaRegistradoPorMensaje =
-      mensajeNormalizado.includes("YA") &&
-      (mensajeNormalizado.includes("REGISTR") ||
-        mensajeNormalizado.includes("DUPLIC") ||
-        mensajeNormalizado.includes("EXISTE"));
-    const yaRegistradoPorSinInsert = resultado.returnValue === 0 && totalAfectadas === 0;
-
-    if (yaRegistradoPorCodigo || yaRegistradoPorMensaje || yaRegistradoPorSinInsert) {
+    if (yaRegistrado) {
       return res.status(409).json({
         message: mensajeDb || "Este teléfono ya fue registrado en el sorteo.",
         code: "ALREADY_REGISTERED",
@@ -259,19 +363,51 @@ app.post("/api/survey", async (req, res) => {
   }
 });
 
-const interviewSchema = z.object({
-  telefono: z.string().trim().min(8).max(50),
-  quiereMasInfo: z.literal("si"),
-  fechaEntrevista: z.string().trim().min(3).max(50),
-  horaEntrevista: z.string().trim().min(3).max(10),
-  modalidadEntrevista: z.enum(["sucursal", "domicilio"]),
-  domicilioEntrevista: z.string().trim().max(200).optional().default(""),
-  idSorteo: z.string().trim().max(50).optional().default(""),
-  codigoPromotor: z.string().trim().max(100).optional().default(""),
-  domicilioSucursal: z.string().trim().max(250).optional().default(""),
-});
-
-const SP_INTERVIEW = process.env.SP_INTERVIEW_NAME || "dbo.encuestaActualizaEntrevistaSorteo01";
+/**
+ * Segundo paso: dbo.encuestaActualizaEntrevistaSorteo01
+ * @telefono, @encuesta, @campo5Valor (SI), @campo6Valor (fecha/hora), @campo7Valor (1|2|3), @campo8Valor
+ */
+const interviewSchema = z
+  .object({
+    telefono: z.string().trim().min(8).max(50),
+    quiereMasInfo: z.literal("si"),
+    fechaEntrevista: z.string().trim().max(50).optional().default(""),
+    horaEntrevista: z.string().trim().max(10).optional().default(""),
+    modalidadEntrevista: z.enum(["sucursal", "domicilio", ""]).optional().default(""),
+    domicilioEntrevista: z.string().trim().max(200).optional().default(""),
+    idSorteo: z.string().trim().min(3).max(50),
+    domicilioSucursal: z.string().trim().max(250).optional().default(""),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.fechaEntrevista) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Falta la fecha de la entrevista.",
+        path: ["fechaEntrevista"],
+      });
+    }
+    if (!data.horaEntrevista) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Falta la hora de la entrevista.",
+        path: ["horaEntrevista"],
+      });
+    }
+    if (!data.modalidadEntrevista) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Falta la modalidad de la entrevista.",
+        path: ["modalidadEntrevista"],
+      });
+    }
+    if (data.modalidadEntrevista === "domicilio" && !data.domicilioEntrevista.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Falta el domicilio para la entrevista.",
+        path: ["domicilioEntrevista"],
+      });
+    }
+  });
 
 app.post("/api/interview", async (req, res) => {
   const parsed = interviewSchema.safeParse(req.body);
@@ -282,29 +418,28 @@ app.post("/api/interview", async (req, res) => {
     });
   }
 
-  const data = parsed.data;
-  const codigoModalidad = modalidadACodigo(data.modalidadEntrevista);
-  let valorDomicilio = "";
-  if (codigoModalidad === "2") {
-    valorDomicilio = (data.domicilioSucursal || "").trim();
-  } else if (codigoModalidad === "3") {
-    valorDomicilio = data.domicilioEntrevista || "";
-  }
-
   try {
     const pool = await getPool();
-    const request = pool.request();
-    request.input("telefono", sql.NVarChar(50), data.telefono.trim());
-    request.input("encuesta", sql.NVarChar(50), data.idSorteo.trim());
-    request.input("usuario", sql.NVarChar(100), data.codigoPromotor.trim());
-    request.input("fechaHora", sql.NVarChar(50), aFormatoFechaSP(`${data.fechaEntrevista}T${data.horaEntrevista}`));
-    request.input("modalidad", sql.NVarChar(10), codigoModalidad);
-    request.input("domicilio", sql.NVarChar(200), valorDomicilio);
-    await request.execute(SP_INTERVIEW);
-    return res.status(200).json({ message: "Entrevista registrada correctamente." });
+    const { via, filas, resultado } = await ejecutarEncuestaActualizacion(pool, parsed.data);
+
+    return res.status(200).json({
+      message: "Entrevista registrada correctamente.",
+      via,
+      filas,
+      procedure: via === "sp" ? SP_INTERVIEW : ENCUESTA_TABLE,
+      result:
+        via === "sp" && resultado
+          ? {
+              rowsAffected: resultado.rowsAffected,
+              returnValue: resultado.returnValue,
+            }
+          : undefined,
+    });
   } catch (error) {
-    console.warn("[/api/interview] SP no disponible o error:", error instanceof Error ? error.message : error);
-    return res.status(200).json({ message: "Solicitud recibida.", warning: "SP no disponible" });
+    return res.status(500).json({
+      message: "Error al actualizar la entrevista en SQL Server.",
+      detail: error instanceof Error ? error.message : "Error desconocido",
+    });
   }
 });
 
