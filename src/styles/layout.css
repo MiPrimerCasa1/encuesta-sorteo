@@ -180,6 +180,26 @@
   background: var(--color-rojo-suave);
 }
 
+.sorteos-historial__btn-fotos--pronto {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
+
+.sorteos-historial__btn-fotos--activo {
+  background: var(--color-rojo);
+  color: var(--color-blanco);
+}
+
+.sorteos-historial__btn-fotos--activo .sorteos-historial__btn-fotos-icono {
+  color: var(--color-blanco);
+}
+
+.sorteos-historial__btn-fotos--activo:hover {
+  background: var(--color-rojo-oscuro);
+  border-color: var(--color-rojo-oscuro);
+}
+
 .sorteos-historial__btn-fotos:focus-visible {
   outline: 2px solid var(--color-rojo);
   outline-offset: 3px;
@@ -547,4 +567,147 @@
   .sucursales {
     grid-template-columns: repeat(4, 1fr);
   }
+}
+
+/* ---- Bases y condiciones — título clicable ---- */
+.footer__bases-titulo--btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--color-gris-texto);
+  opacity: 0.7;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-align: center;
+}
+.footer__bases-titulo--btn:hover { opacity: 1; }
+
+/* ---- Modal bases y condiciones ---- */
+.bases-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  animation: bases-fade-in 0.2s ease both;
+}
+
+@keyframes bases-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.bases-sheet {
+  width: 100%;
+  max-height: 88vh;
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  animation: bases-slide-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  overflow: hidden;
+}
+
+@keyframes bases-slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.bases-sheet__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid #F0F0F0;
+  flex-shrink: 0;
+}
+
+.bases-sheet__titulo {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-negro);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.bases-sheet__cerrar {
+  background: #F4F4F4;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #555;
+  flex-shrink: 0;
+}
+.bases-sheet__cerrar:hover { background: #E8E8E8; }
+
+.bases-sheet__body {
+  overflow-y: auto;
+  padding: 20px 20px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.bases-sheet__empresa {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-rojo);
+  margin: 0;
+}
+
+.bases-sheet__seccion {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bases-sheet__subtitulo {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-negro);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.bases-sheet__seccion p,
+.bases-sheet__seccion ul {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 400;
+  color: #444;
+  line-height: 1.55;
+}
+
+.bases-sheet__lista {
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bases-sheet__pie {
+  font-size: 11px;
+  font-style: italic;
+  color: #888;
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid #F0F0F0;
 }

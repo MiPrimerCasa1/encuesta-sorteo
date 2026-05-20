@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
+import { Calendar, Clock } from "lucide-react";
 
 export type ModalidadEntrevista = "sucursal" | "domicilio" | "";
 
@@ -131,13 +132,6 @@ function EntrevistaSelector({
     </svg>
   );
 
-  const iconoReloj = (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 3" />
-    </svg>
-  );
-
   const iconoSucursal = (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 9.5 12 3l9 6.5V21H3V9.5Z" />
@@ -176,21 +170,27 @@ function EntrevistaSelector({
 
         {/* Fecha */}
         <div className="entrevista-selector__campo">
-          <label className="entrevista-selector__label">Fecha</label>
           <div className="fecha-picker" ref={menuFechaRef}>
             <button
               type="button"
-              className={`fecha-picker__btn${fechaSeleccionada ? " fecha-picker__btn--sel" : ""}${menuFechaAbierto ? " fecha-picker__btn--abierto" : ""}`}
+              className="dts-circle"
+              data-glyph="F"
+              data-selected={fechaSeleccionada ? "true" : "false"}
               onClick={() => { if (!deshabilitado) setMenuFechaAbierto((v) => !v); }}
               disabled={deshabilitado}
               aria-expanded={menuFechaAbierto}
               aria-haspopup="dialog"
             >
-              <span className="fecha-picker__icono-cal" aria-hidden="true">{iconoCalendario}</span>
-              <span className="fecha-picker__texto">
-                {fechaSeleccionada ? formatearFechaCorta(fechaSeleccionada) : "FECHA"}
+              <span className="dts-badge">
+                <Calendar size={11} strokeWidth={2.25} />
+                Fecha
               </span>
-              <span className="fecha-picker__chevron" aria-hidden="true">▾</span>
+              <span className="dts-label">
+                Fecha<span className="dot">.</span>
+              </span>
+              <span className="dts-value">
+                {fechaSeleccionada ? formatearFechaCorta(fechaSeleccionada) : "ELEGIR DÍA"}
+              </span>
             </button>
 
             {menuFechaAbierto && !deshabilitado && (
@@ -267,21 +267,27 @@ function EntrevistaSelector({
 
         {/* Hora */}
         <div className="entrevista-selector__campo">
-          <label className="entrevista-selector__label">Hora</label>
           <div className="hora-picker" ref={menuHoraRef}>
             <button
               type="button"
-              className={`hora-picker__btn-selector${horaSeleccionada ? " hora-picker__btn-selector--sel" : ""}${menuHoraAbierto ? " hora-picker__btn-selector--abierto" : ""}`}
+              className="dts-circle"
+              data-glyph="H"
+              data-selected={horaSeleccionada ? "true" : "false"}
               onClick={() => { if (!deshabilitado) setMenuHoraAbierto((v) => !v); }}
               disabled={deshabilitado}
               aria-expanded={menuHoraAbierto}
               aria-haspopup="listbox"
             >
-              <span className="hora-picker__icono-rel" aria-hidden="true">{iconoReloj}</span>
-              <span className="hora-picker__texto">
-                {horaSeleccionada || "HORA"}
+              <span className="dts-badge">
+                <Clock size={11} strokeWidth={2.25} />
+                Hora
               </span>
-              <span className="hora-picker__chevron" aria-hidden="true">▾</span>
+              <span className="dts-label">
+                Hora<span className="dot">.</span>
+              </span>
+              <span className="dts-value">
+                {horaSeleccionada ? `${horaSeleccionada} HS` : "ELEGIR HORA"}
+              </span>
             </button>
 
             {menuHoraAbierto && !deshabilitado && (
@@ -316,23 +322,30 @@ function EntrevistaSelector({
       </p>
 
       <div className="entrevista-selector__modalidades">
-        {MODALIDADES.map(({ valor, etiqueta, icono }) => (
-          <button
-            key={valor}
-            type="button"
-            className={`entrevista-selector__mod-btn${
-              modalidadSeleccionada === valor && !deshabilitado
-                ? " entrevista-selector__mod-btn--sel"
-                : ""
-            }`}
-            onClick={() => onModalidadChange(valor)}
-            disabled={deshabilitado}
-          >
-            <span className="entrevista-selector__mod-icono" aria-hidden="true">
-              {icono}
-            </span>
-            {etiqueta}
-          </button>
+        {MODALIDADES.map(({ valor, etiqueta, icono }, i) => (
+          <>
+            {i > 0 && (
+              <span key={`sep-${i}`} className="entrevista-selector__mod-sep" aria-hidden="true">
+                o
+              </span>
+            )}
+            <button
+              key={valor}
+              type="button"
+              className={`entrevista-selector__mod-btn${
+                modalidadSeleccionada === valor && !deshabilitado
+                  ? " entrevista-selector__mod-btn--sel"
+                  : ""
+              }`}
+              onClick={() => onModalidadChange(valor)}
+              disabled={deshabilitado}
+            >
+              <span className="entrevista-selector__mod-icono" aria-hidden="true">
+                {icono}
+              </span>
+              {etiqueta}
+            </button>
+          </>
         ))}
       </div>
 

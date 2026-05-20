@@ -99,6 +99,16 @@
   margin-left: 56px;
 }
 
+.question-card__fila--centrada .question-card__pregunta {
+  text-align: center;
+  flex: 1 1 100%;
+}
+
+.question-card__fila--centrada .question-card__opciones {
+  margin-left: 0;
+  justify-content: center;
+}
+
 .question-card__hint {
   font-size: 12px;
   font-weight: 500;
@@ -305,6 +315,17 @@
   display: flex;
   flex-direction: column;
   gap: var(--espacio-xs);
+  align-items: stretch;
+}
+
+.entrevista-selector__mod-sep {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--color-rojo);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
 }
 
 .entrevista-selector__mod-btn {
@@ -800,6 +821,15 @@
   margin: 0;
 }
 
+.success-card__subtitulo {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-gris-texto);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
 @keyframes sorpresa-logo-pulse {
   0%,
   100% {
@@ -1063,6 +1093,60 @@
   color: var(--color-gris-texto);
   line-height: 1.45;
   white-space: pre-wrap;
+}
+
+.banner-demo {
+  width: 100%;
+  background: #f59e0b;
+  color: #1a1a1a;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  padding: 8px var(--espacio-md);
+  letter-spacing: 0.03em;
+}
+
+.felicidades-card {
+  background: var(--color-blanco);
+  border-radius: var(--radio-card);
+  padding: var(--espacio-xl) var(--espacio-lg);
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  box-shadow: var(--sombra-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-md);
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.felicidades-card__icono-wrap {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.felicidades-card__icono {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.felicidades-card__titulo {
+  font-size: 20px;
+  font-weight: 800;
+  color: #16a34a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  margin: 0;
 }
 
 /* ---- Pantallas muy pequeñas (< 360px) ---- */

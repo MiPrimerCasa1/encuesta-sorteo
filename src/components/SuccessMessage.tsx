@@ -1,15 +1,20 @@
+import { Check } from "lucide-react";
+
 function SuccessMessage() {
   return (
     <div
       id="seccion-resultado-encuesta"
-      className="success-card"
+      className="pr-success"
       role="status"
       aria-live="polite"
     >
-      <span className="success-card__icono-wrap" aria-hidden="true">
-        <span className="success-card__icono">✓</span>
-      </span>
-      <h2 className="success-card__titulo">Gracias ya estás participando</h2>
+      <div className="pr-check" aria-hidden="true">
+        <Check size={28} strokeWidth={3} />
+      </div>
+      <p className="pr-success-text">
+        <strong>¡Felicitaciones!</strong>
+        Ya estás participando por el sorteo de las motos.
+      </p>
     </div>
   );
 }

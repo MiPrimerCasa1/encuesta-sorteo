@@ -1,5 +1,6 @@
-import { Fragment, type ReactElement } from 'react'
+import { Fragment, useState, type ReactElement } from 'react'
 import SorteosHistorial from './SorteosHistorial'
+import BasesModal from './BasesModal'
 import { SUCURSALES } from '../data/branches'
 import { REDES_SOCIALES } from '../data/socialLinks'
 import { TEXTOS } from '../data/branding'
@@ -9,6 +10,7 @@ interface Props {
 }
 
 function BranchFooter({ desbloqueado }: Props) {
+  const [basesAbiertas, setBasesAbiertas] = useState(false);
   const iconoPin = (
     <svg viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 2a8 8 0 0 0-8 8c0 5.5 7.1 11.4 7.4 11.7a1 1 0 0 0 1.2 0C12.9 21.4 20 15.5 20 10a8 8 0 0 0-8-8Zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" />
@@ -112,7 +114,13 @@ function BranchFooter({ desbloqueado }: Props) {
       <p className="footer__aclaracion">{TEXTOS.fechaSorteo}</p>
 
       <div className="footer__bases">
-        <p className="footer__bases-titulo">{TEXTOS.basesCondicionesTitulo}</p>
+        <button
+          type="button"
+          className="footer__bases-titulo--btn"
+          onClick={() => setBasesAbiertas(true)}
+        >
+          {TEXTOS.basesCondicionesTitulo} ↗
+        </button>
         <ul className="footer__bases-lista">
           {TEXTOS.basesCondicionesLineas.map((linea, idx) => (
             <li key={idx} className="footer__bases-item">
@@ -121,6 +129,8 @@ function BranchFooter({ desbloqueado }: Props) {
           ))}
         </ul>
       </div>
+
+      {basesAbiertas && <BasesModal onClose={() => setBasesAbiertas(false)} />}
     </footer>
   )
 }

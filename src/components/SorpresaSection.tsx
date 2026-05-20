@@ -1,95 +1,74 @@
-import { useCallback, useState } from "react";
-import { LOGO_URL, TEXTOS } from "../data/branding";
-import { REDES_SOCIALES } from "../data/socialLinks";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { TEXTOS } from "../data/branding";
+import logoArreglado from "../assets/Logo-Arreglado (1).png";
 
 type Props = {
   telefonoAsesor: string;
+  masInfoBloque: ReactNode;
 };
 
-function enlaceContactoAsesor(telefonoAsesor: string): { href: string; externo: boolean } {
-  const digits = telefonoAsesor.replace(/\D/g, "");
-  if (digits.length >= 8) {
-    const texto = encodeURIComponent(
-      "Hola, quiero información sobre el descuento y los productos disponibles."
-    );
-    return {
-      href: `https://wa.me/${digits}?text=${texto}`,
-      externo: true,
-    };
-  }
-  const instagram = REDES_SOCIALES.find((r) => r.red === "Instagram");
-  return {
-    href: instagram?.url ?? "#",
-    externo: true,
-  };
-}
+function SorpresaSection({ masInfoBloque }: Props) {
+  const [visible, setVisible] = useState(false);
+  const [descubierto, setDescubierto] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
-function SorpresaSection({ telefonoAsesor }: Props) {
-  const [ofertaVisible, setOfertaVisible] = useState(false);
-
-  const revelar = useCallback(() => {
-    setOfertaVisible(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(true), 3000);
+    return () => clearTimeout(timer);
   }, []);
 
-  const contacto = enlaceContactoAsesor(telefonoAsesor);
-
   return (
-    <section className="sorpresa-card" aria-labelledby="sorpresa-heading">
-      <h2 id="sorpresa-heading" className="sorpresa-card__titulo">
-        {TEXTOS.sorpresaTitulo}
-      </h2>
+    <div
+      ref={sectionRef}
+      className={`pr-surprise${visible ? " visible" : ""}${descubierto ? " revealed" : ""}`}
+      aria-labelledby="pr-sorpresa-heading"
+    >
+      {!descubierto && (
+        <p id="pr-sorpresa-heading" className="pr-surprise-title">
+          {TEXTOS.sorpresaTitulo}
+        </p>
+      )}
 
-      {!ofertaVisible ? (
-        <button
-          type="button"
-          className="sorpresa-card__tocar"
-          onClick={revelar}
-          aria-expanded={false}
-          aria-controls="sorpresa-oferta-panel"
-        >
-          <span className="sorpresa-card__tocar-brillo" aria-hidden="true" />
-          <img
-            src={LOGO_URL}
-            alt=""
-            className="sorpresa-card__tocar-logo"
-            width={80}
-            height={80}
-            decoding="async"
-          />
-          <span className="sorpresa-card__tocar-texto">{TEXTOS.sorpresaCta}</span>
-        </button>
-      ) : null}
+      <div className="pr-inner">
+        {!descubierto ? (
+          <div className="pr-pulse-stage">
+            <div className="pr-pulse-btn-wrap">
+              <span className="pr-ring" aria-hidden="true" />
+              <span className="pr-ring" aria-hidden="true" />
+              <span className="pr-ring" aria-hidden="true" />
+              <span className="pr-ring" aria-hidden="true" />
+              <button
+                type="button"
+                className="pr-pulse-btn"
+                onClick={() => setDescubierto(true)}
+                aria-label="Revelar sorpresa"
+              >
+                <img src={logoArreglado} alt="" className="pr-pulse-logo" aria-hidden="true" />
+              </button>
+            </div>
+            <span className="pr-pulse-label" aria-hidden="true">PULSA</span>
+          </div>
+        ) : (
+          <div className="pr-discount visible">
+            <p className="pr-discount-line" aria-label="Hasta un 40% OFF de descuento">
+              <span className="prefix">{TEXTOS.sorpresaDescuentoAntesPct}</span>
+              <span className="number">
+                40<span className="pct">%</span>
+              </span>
+              <span className="off">OFF</span>
+            </p>
+            <p className="pr-discount-sub">
+              En productos seleccionados,{" "}
+              <b>SIN OBLIGACIÓN DE COMPRA.</b>
+              <br />
+              También participás del sorteo del terreno.
+            </p>
+          </div>
+        )}
+      </div>
 
-      {ofertaVisible ? (
-        <div
-          id="sorpresa-oferta-panel"
-          className="sorpresa-card__oferta"
-          role="region"
-          aria-labelledby="sorpresa-oferta-titulo"
-        >
-          <p id="sorpresa-oferta-titulo" className="sorpresa-card__oferta-titulo">
-            <span className="sorpresa-card__oferta-titulo-pre">
-              {TEXTOS.sorpresaDescuentoAntesPct}
-            </span>
-            <span className="sorpresa-card__oferta-pct">{TEXTOS.sorpresaDescuentoPct}</span>
-            <span className="sorpresa-card__oferta-titulo-post">
-              {TEXTOS.sorpresaDescuentoDespuesPct}
-            </span>
-          </p>
-          <p className="sorpresa-card__oferta-texto">
-            {TEXTOS.sorpresaDescuentoTexto}
-          </p>
-          <a
-            className="sorpresa-card__btn-asesor"
-            href={contacto.href}
-            target={contacto.externo ? "_blank" : undefined}
-            rel={contacto.externo ? "noopener noreferrer" : undefined}
-          >
-            {TEXTOS.sorpresaAsesorCta}
-          </a>
-        </div>
-      ) : null}
-    </section>
+      {descubierto && masInfoBloque}
+    </div>
   );
 }
 

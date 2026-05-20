@@ -8,6 +8,12 @@ import SuccessMessage from "./components/SuccessMessage";
 import YaRegistradoMessage from "./components/YaRegistradoMessage";
 import TextInput from "./components/TextInput";
 import EntrevistaSelector, { type ModalidadEntrevista } from "./components/EntrevistaSelector";
+import PrizeCarousel from "./components/PrizeCarousel";
+import {
+  CLAVES_DOMICILIO_SUCURSAL,
+  crearParamsUrl,
+  obtenerTelefonoSupervisor,
+} from "./utils/urlQuery";
 
 type FormData = {
   nombreCompleto: string;
@@ -26,6 +32,18 @@ const ESTADO_INICIAL: FormData = {
   barrio: "",
   conoceFirma: "",
   conoceCuota55000: "",
+  quiereMasInfo: "",
+  fechaEntrevista: "",
+  horaEntrevista: "",
+  modalidadEntrevista: "",
+  domicilioEntrevista: "",
+};
+
+const ESTADO_DEMO: FormData = {
+  nombreCompleto: "Juan Pérez (DEMO)",
+  barrio: "Barrio Centro",
+  conoceFirma: "si",
+  conoceCuota55000: "no",
   quiereMasInfo: "",
   fechaEntrevista: "",
   horaEntrevista: "",
@@ -68,23 +86,6 @@ function obtenerParametro(params: URLSearchParams, claves: string[]): string {
   return "";
 }
 
-/** Teléfono del supervisor (WhatsApp). Nunca usar el celular del participante. */
-function telefonoSupervisorDesdeUrl(params: URLSearchParams): string {
-  const directo = obtenerParametro(params, CLAVES_TELEFONO_SUPERVISOR);
-  if (directo) return directo;
-  for (const [key, value] of params.entries()) {
-    const k = key.toLowerCase();
-    if (!value.trim()) continue;
-    if (
-      k.includes("supervisor") &&
-      (k.includes("celular") || k.includes("telefono") || k.includes("tel"))
-    ) {
-      return value.trim();
-    }
-  }
-  return "";
-}
-
 /** Solo nombre del promotor (sin "Supervisado por …" u otros sufijos del sistema). */
 function nombrePromotorParaMostrar(texto: string): string {
   const limpio = texto.trim();
@@ -98,44 +99,16 @@ type SupervisorInfo = {
   domicilioSucursal: string;
 };
 
-const CLAVES_TELEFONO_SUPERVISOR = [
-  "supervisorCelular",
-  "SupervisorCelular",
-  "supervisor_celular",
-  "telefono_supervisor",
-  "telefonoSupervisor",
-  "TelefonoSupervisor",
-  "tel_supervisor",
-  "telSupervisor",
-  "celular_supervisor",
-  "celularSupervisor",
-  "telefono_vendedor",
-  "TelefonoVendedor",
-  "telefono_super",
-  "supervisor_telefono",
-];
-
-const CLAVES_DOMICILIO_SUCURSAL = [
-  "supervisorSucursalDireccion",
-  "domicilio_sucursal",
-  "domicilioSucursal",
-  "domicilio_vendedor",
-  "DomicilioVendedor",
-  "direccion_sucursal",
-  "direccionSucursal",
-  "sucursal_domicilio",
-  "domicilio_supervisor",
-];
-
-function supervisorDesdeUrl(params: URLSearchParams): SupervisorInfo {
+function supervisorDesdeUrl(params: URLSearchParams, searchCrudo: string): SupervisorInfo {
   return {
-    telefonoSupervisor: telefonoSupervisorDesdeUrl(params),
+    telefonoSupervisor: obtenerTelefonoSupervisor(params, searchCrudo),
     domicilioSucursal: obtenerParametro(params, CLAVES_DOMICILIO_SUCURSAL),
   };
 }
 
 function App() {
-  const params = useMemo(() => new URLSearchParams(window.location.search), []);
+  const searchCrudo = window.location.search;
+  const params = useMemo(() => crearParamsUrl(searchCrudo), [searchCrudo]);
 
   /** Solo en `npm run dev`: ver pantalla post-envío sin llamar a la API. */
   const previewEnviado =
@@ -146,7 +119,10 @@ function App() {
     params.get("preview") === "registrado" &&
     !previewEnviado;
 
-  const [datos, setDatos] = useState<FormData>(ESTADO_INICIAL);
+  /** ?demo=1 → pre-llena el formulario y simula envío sin tocar la BD. */
+  const modoDemo = params.get("demo") === "1";
+
+  const [datos, setDatos] = useState<FormData>(modoDemo ? ESTADO_DEMO : ESTADO_INICIAL);
   const [errores, setErrores] = useState<string[]>([]);
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(previewEnviado);
@@ -156,7 +132,14 @@ function App() {
       ? "Vista previa: participación ya registrada."
       : ""
   );
-  const supervisorInfo = useMemo(() => supervisorDesdeUrl(params), [params]);
+  const [entrevistaConfirmada, setEntrevistaConfirmada] = useState(false);
+  const [entrevistaEnviando, setEntrevistaEnviando] = useState(false);
+  const [entrevistaError, setEntrevistaError] = useState("");
+  const [erroresEntrevista, setErroresEntrevista] = useState<string[]>([]);
+  const supervisorInfo = useMemo(
+    () => supervisorDesdeUrl(params, searchCrudo),
+    [params, searchCrudo]
+  );
 
   const codigoQr =
     obtenerParametro(params, ["codigo_qr", "qr_code", "wa_msg", "codigo", "Codigo"]) || "";
@@ -180,8 +163,9 @@ function App() {
     params.get("sorteo_nombre") ??
     formatearNombreSorteo(idSorteo);
   const mensajeWhatsapp = obtenerParametro(params, ["wa_msg", "codigo", "Codigo"]) || codigoQr;
-  const telefono =
-    obtenerParametro(params, ["telefono", "Telefono", "phone", "tel"]) || "";
+  const telefono = modoDemo
+    ? "5491100000000"
+    : obtenerParametro(params, ["telefono", "Telefono", "phone", "tel"]) || "";
 
   /**
    * Tras enviar: siempre llevar la vista al mensaje principal (éxito o ya registrado),
@@ -220,19 +204,11 @@ function App() {
     const erroresNuevos: string[] = [];
     if (!datos.nombreCompleto.trim()) erroresNuevos.push("Ingresá tu nombre y apellido.");
     if (!datos.barrio.trim()) erroresNuevos.push("Ingresá tu barrio o dirección.");
-    if (!datos.conoceFirma || !datos.conoceCuota55000 || !datos.quiereMasInfo) {
+    if (!datos.conoceFirma || !datos.conoceCuota55000) {
       erroresNuevos.push("Respondé todas las preguntas obligatorias.");
     }
     if (!telefono.trim()) {
       erroresNuevos.push("No se recibió el teléfono desde WhatsApp.");
-    }
-    if (datos.quiereMasInfo === "si") {
-      if (!datos.fechaEntrevista) erroresNuevos.push("Seleccioná la fecha de la entrevista.");
-      if (!datos.horaEntrevista) erroresNuevos.push("Seleccioná la hora de la entrevista.");
-      if (!datos.modalidadEntrevista) erroresNuevos.push("Seleccioná nuestras oficinas o su domicilio.");
-      if (datos.modalidadEntrevista === "domicilio" && !datos.domicilioEntrevista.trim()) {
-        erroresNuevos.push("Ingresá la dirección de su domicilio.");
-      }
     }
     setErrores(erroresNuevos);
     return erroresNuevos.length === 0;
@@ -243,29 +219,21 @@ function App() {
     setMensajeYaRegistrado("");
     if (!validar()) return;
 
+    if (modoDemo) {
+      setEnviando(true);
+      await new Promise((r) => setTimeout(r, 800));
+      setEnviando(false);
+      setEnviado(true);
+      return;
+    }
+
     try {
       setEnviando(true);
       const respuestas: Array<{ codigoPregunta: string; valor: string }> = [
         { codigoPregunta: "conoce_firma", valor: datos.conoceFirma },
         { codigoPregunta: "conoce_cuota_55000", valor: datos.conoceCuota55000 },
-        { codigoPregunta: "quiere_mas_info", valor: datos.quiereMasInfo },
+        { codigoPregunta: "quiere_mas_info", valor: "no" },
       ];
-      if (datos.quiereMasInfo === "si") {
-        respuestas.push({
-          codigoPregunta: "fecha_entrevista",
-          valor: `${datos.fechaEntrevista}T${datos.horaEntrevista}`,
-        });
-        respuestas.push({
-          codigoPregunta: "modalidad_entrevista",
-          valor: datos.modalidadEntrevista,
-        });
-        if (datos.modalidadEntrevista === "domicilio") {
-          respuestas.push({
-            codigoPregunta: "domicilio_entrevista",
-            valor: datos.domicilioEntrevista.trim(),
-          });
-        }
-      }
 
       const payload = {
         participante: {
@@ -314,6 +282,47 @@ function App() {
     }
   };
 
+  const handleConfirmarEntrevista = async () => {
+    const nuevosErrores: string[] = [];
+    if (!datos.fechaEntrevista) nuevosErrores.push("Seleccioná la fecha de la entrevista.");
+    if (!datos.horaEntrevista) nuevosErrores.push("Seleccioná la hora de la entrevista.");
+    if (!datos.modalidadEntrevista) nuevosErrores.push("Seleccioná nuestras oficinas o su domicilio.");
+    if (datos.modalidadEntrevista === "domicilio" && !datos.domicilioEntrevista.trim()) {
+      nuevosErrores.push("Ingresá la dirección de su domicilio.");
+    }
+    setErroresEntrevista(nuevosErrores);
+    if (nuevosErrores.length > 0) return;
+
+    setEntrevistaEnviando(true);
+    setEntrevistaError("");
+    try {
+      const response = await fetch("/api/interview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          telefono,
+          quiereMasInfo: "si",
+          fechaEntrevista: datos.fechaEntrevista,
+          horaEntrevista: datos.horaEntrevista,
+          modalidadEntrevista: datos.modalidadEntrevista,
+          domicilioEntrevista: datos.domicilioEntrevista,
+          idSorteo,
+          codigoPromotor,
+          domicilioSucursal: supervisorInfo.domicilioSucursal,
+        }),
+      });
+      const body = (await response.json().catch(() => ({}))) as { message?: string };
+      if (!response.ok) {
+        throw new Error(body.message ?? "No pudimos registrar la entrevista.");
+      }
+      setEntrevistaConfirmada(true);
+    } catch (error) {
+      setEntrevistaError(error instanceof Error ? error.message : "Error al registrar la entrevista.");
+    } finally {
+      setEntrevistaEnviando(false);
+    }
+  };
+
   const iconoPersona = (
     <svg viewBox="0 0 24 24" fill="currentColor">
       <circle cx="12" cy="8" r="4" />
@@ -343,24 +352,89 @@ function App() {
       <path d="M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
     </svg>
   );
-  const iconoChat = (
-    <svg viewBox="0 0 24 24" fill="currentColor">
-      <path d="M4 4h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-4 3v-3H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
-      <path d="M20 9h.5a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H20v3l-3-3h-5v-2h7a1 1 0 0 0 1-1V9Z" />
-    </svg>
+  const bloqueMasInfo = !entrevistaConfirmada ? (
+    <main className="card-principal">
+      <QuestionCard
+        pregunta="¿Querés Asesoramiento?"
+        hint="Sin obligación de compra"
+        valorSeleccionado={datos.quiereMasInfo}
+        onChange={(v) => actualizarCampo("quiereMasInfo", v)}
+      />
+      {datos.quiereMasInfo === "no" ? (
+        <div className="success-card" style={{ maxWidth: 520, margin: "0 auto", width: "100%" }}>
+          <span className="success-card__icono-wrap" aria-hidden="true">
+            <span className="success-card__icono">✓</span>
+          </span>
+          <h2 className="success-card__titulo">¡Gracias por participar!</h2>
+          <PrizeCarousel soloMotos />
+        </div>
+      ) : null}
+      {datos.quiereMasInfo === "si" ? (
+        <EntrevistaSelector
+          fechaSeleccionada={datos.fechaEntrevista}
+          horaSeleccionada={datos.horaEntrevista}
+          modalidadSeleccionada={datos.modalidadEntrevista}
+          domicilioIngresado={datos.domicilioEntrevista}
+          onFechaChange={(v) => actualizarCampo("fechaEntrevista", v)}
+          onHoraChange={(v) => actualizarCampo("horaEntrevista", v)}
+          onModalidadChange={(v) => actualizarCampo("modalidadEntrevista", v)}
+          onDomicilioChange={(v) => actualizarCampo("domicilioEntrevista", v)}
+          deshabilitado={false}
+          sucursalSupervisor={supervisorInfo.domicilioSucursal}
+        />
+      ) : null}
+      {erroresEntrevista.length > 0 ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {erroresEntrevista.map((msg) => (
+            <div className="error-mensaje" key={msg}>{msg}</div>
+          ))}
+        </div>
+      ) : null}
+      {entrevistaError ? <div className="error-mensaje">{entrevistaError}</div> : null}
+      {datos.quiereMasInfo === "si" ? (
+        <button
+          type="button"
+          className="boton-enviar"
+          onClick={handleConfirmarEntrevista}
+          disabled={entrevistaEnviando}
+        >
+          {entrevistaEnviando ? "Enviando..." : "CONFIRMAR ENTREVISTA"}
+        </button>
+      ) : null}
+    </main>
+  ) : (
+    <div className="success-card" style={{ maxWidth: 520, margin: "0 auto", width: "100%" }}>
+      <span className="success-card__icono-wrap" aria-hidden="true">
+        <span className="success-card__icono">✓</span>
+      </span>
+      <h2 className="success-card__titulo">¡Entrevista confirmada!</h2>
+      <p className="success-card__subtitulo">¡Ya estás participando por un terreno y las motos!</p>
+      <PrizeCarousel />
+    </div>
   );
 
   return (
     <div className="app-container">
       <Header telefono={telefono} etiquetaPromotor={etiquetaPromotor} />
+      {modoDemo && (
+        <div className="banner-demo" role="status">
+          ⚠️ MODO DEMO — el envío no guarda datos reales
+        </div>
+      )}
 
       {enviado ? (
-        <>
+        <div className="pr-wrap">
           <SuccessMessage />
-          <SorpresaSection telefonoAsesor={supervisorInfo.telefonoSupervisor} />
-        </>
+          <SorpresaSection
+            telefonoAsesor={supervisorInfo.telefonoSupervisor}
+            masInfoBloque={bloqueMasInfo}
+          />
+        </div>
       ) : mensajeYaRegistrado ? (
-        <YaRegistradoMessage mensaje={mensajeYaRegistrado} />
+        <>
+          <YaRegistradoMessage />
+          {bloqueMasInfo}
+        </>
       ) : (
         <>
           <main className="card-principal">
@@ -389,32 +463,10 @@ function App() {
             />
             <QuestionCard
               icono={iconoDolar}
-              pregunta="¿Sabías que con $55.000 por mes (cuotas fijas) comenzás pagando tu terreno?"
+              pregunta={<>¿Sabías que con $55.000 por mes (<strong style={{textTransform:"uppercase"}}>CUOTAS FIJAS</strong>) podés pagar tu terreno? (También incluyen alcantarillas y pilar)</>}
               valorSeleccionado={datos.conoceCuota55000}
               onChange={(v) => actualizarCampo("conoceCuota55000", v)}
             />
-            <QuestionCard
-              icono={iconoChat}
-              pregunta="¿Querés más información?"
-              hint="Si elegís Sí, acordás una entrevista con el supervisor."
-              valorSeleccionado={datos.quiereMasInfo}
-              onChange={(v) => actualizarCampo("quiereMasInfo", v)}
-            />
-            {datos.quiereMasInfo === "si" ? (
-              <EntrevistaSelector
-                fechaSeleccionada={datos.fechaEntrevista}
-                horaSeleccionada={datos.horaEntrevista}
-                modalidadSeleccionada={datos.modalidadEntrevista}
-                domicilioIngresado={datos.domicilioEntrevista}
-                onFechaChange={(v) => actualizarCampo("fechaEntrevista", v)}
-                onHoraChange={(v) => actualizarCampo("horaEntrevista", v)}
-                onModalidadChange={(v) => actualizarCampo("modalidadEntrevista", v)}
-                onDomicilioChange={(v) => actualizarCampo("domicilioEntrevista", v)}
-                deshabilitado={false}
-                sucursalSupervisor={supervisorInfo.domicilioSucursal}
-              />
-            ) : null}
-
             {errores.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {errores.map((msg) => (
