@@ -10,12 +10,12 @@ export const TEXTOS = {
   premioPrincipalDetalle: "UN TERRENO 10X30 SOBRE AVENIDA",
   premioExtraEtiqueta: "PREMIO EXTRA:",
   premioExtraDetalle: "1 MOTO 110 CC Y 2 MOTOS ELÉCTRICAS",
-  fechaSorteo: "Sorteamos el 21 de septiembre de 2026 ante escribano público.",
+  fechaSorteo: "Sorteamos el 23 de diciembre de 2026 a las 18 horas ante escribano público.",
 
   basesCondicionesTitulo: "Bases y condiciones",
   basesCondicionesLineas: [
     "Participá con el número del celular.",
-    "Para el premio principal debe abonar la suscripción.",
+    "Sorteo totalmente gratis si completás la encuesta.",
     "Sorteo presencial ante escribano público.",
   ],
 

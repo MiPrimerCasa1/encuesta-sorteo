@@ -99,6 +99,16 @@
   margin-left: 56px;
 }
 
+.question-card__fila--centrada .question-card__pregunta {
+  text-align: center;
+  flex: 1 1 100%;
+}
+
+.question-card__fila--centrada .question-card__opciones {
+  margin-left: 0;
+  justify-content: center;
+}
+
 .question-card__hint {
   font-size: 12px;
   font-weight: 500;
@@ -305,6 +315,17 @@
   display: flex;
   flex-direction: column;
   gap: var(--espacio-xs);
+  align-items: stretch;
+}
+
+.entrevista-selector__mod-sep {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--color-rojo);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
 }
 
 .entrevista-selector__mod-btn {
@@ -798,6 +819,15 @@
   letter-spacing: 0.04em;
   line-height: 1.25;
   margin: 0;
+}
+
+.success-card__subtitulo {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-gris-texto);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 @keyframes sorpresa-logo-pulse {

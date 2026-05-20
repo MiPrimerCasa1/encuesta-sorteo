@@ -1,4 +1,5 @@
 import { LOGO_URL, TEXTOS } from "../data/branding";
+import PrizeCarousel from "./PrizeCarousel";
 
 interface Props {
   telefono: string;
@@ -15,16 +16,7 @@ function Header({ telefono, etiquetaPromotor }: Props) {
       <h1 className="header__titulo">{TEXTOS.tituloPrincipal}</h1>
       <span className="header__badge">{TEXTOS.badge}</span>
 
-      <div className="header__premios">
-        <div className="header__premio-bloque-principal">
-          <p className="header__premio-principal-titulo">{TEXTOS.premioPrincipalEtiqueta}</p>
-          <p className="header__premio-principal-detalle">{TEXTOS.premioPrincipalDetalle}</p>
-        </div>
-        <div className="header__premio-bloque-extra">
-          <p className="header__premio-extra-titulo">{TEXTOS.premioExtraEtiqueta}</p>
-          <p className="header__premio-extra-detalle">{TEXTOS.premioExtraDetalle}</p>
-        </div>
-      </div>
+      <PrizeCarousel />
 
       <div className="header__info-card">
         <div className="header__info-item">

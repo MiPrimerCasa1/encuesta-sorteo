@@ -8,6 +8,7 @@ import SuccessMessage from "./components/SuccessMessage";
 import YaRegistradoMessage from "./components/YaRegistradoMessage";
 import TextInput from "./components/TextInput";
 import EntrevistaSelector, { type ModalidadEntrevista } from "./components/EntrevistaSelector";
+import PrizeCarousel from "./components/PrizeCarousel";
 
 type FormData = {
   nombreCompleto: string;
@@ -357,22 +358,23 @@ function App() {
       <path d="M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
     </svg>
   );
-  const iconoChat = (
-    <svg viewBox="0 0 24 24" fill="currentColor">
-      <path d="M4 4h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-4 3v-3H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
-      <path d="M20 9h.5a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H20v3l-3-3h-5v-2h7a1 1 0 0 0 1-1V9Z" />
-    </svg>
-  );
-
   const bloqueMasInfo = !entrevistaConfirmada ? (
     <main className="card-principal">
       <QuestionCard
-        icono={iconoChat}
-        pregunta="¿Querés más información?"
-        hint="Si elegís Sí, acordás una entrevista con el supervisor."
+        pregunta="¿Querés Asesoramiento?"
+        hint="Sin obligación de compra"
         valorSeleccionado={datos.quiereMasInfo}
         onChange={(v) => actualizarCampo("quiereMasInfo", v)}
       />
+      {datos.quiereMasInfo === "no" ? (
+        <div className="success-card" style={{ maxWidth: 520, margin: "0 auto", width: "100%" }}>
+          <span className="success-card__icono-wrap" aria-hidden="true">
+            <span className="success-card__icono">✓</span>
+          </span>
+          <h2 className="success-card__titulo">¡Gracias por participar!</h2>
+          <PrizeCarousel soloMotos />
+        </div>
+      ) : null}
       {datos.quiereMasInfo === "si" ? (
         <EntrevistaSelector
           fechaSeleccionada={datos.fechaEntrevista}
@@ -412,6 +414,8 @@ function App() {
         <span className="success-card__icono">✓</span>
       </span>
       <h2 className="success-card__titulo">¡Entrevista confirmada!</h2>
+      <p className="success-card__subtitulo">¡Ya estás participando por un terreno y las motos!</p>
+      <PrizeCarousel />
     </div>
   );
 
@@ -425,13 +429,13 @@ function App() {
       )}
 
       {enviado ? (
-        <>
+        <div className="pr-wrap">
           <SuccessMessage />
-          {bloqueMasInfo}
           <SorpresaSection
             telefonoAsesor={supervisorInfo.telefonoSupervisor || telefono}
+            masInfoBloque={bloqueMasInfo}
           />
-        </>
+        </div>
       ) : mensajeYaRegistrado ? (
         <>
           <YaRegistradoMessage />
@@ -465,7 +469,7 @@ function App() {
             />
             <QuestionCard
               icono={iconoDolar}
-              pregunta="¿Sabías que con $55.000 por mes (cuotas fijas) comenzás pagando tu terreno?"
+              pregunta={<>¿Sabías que con $55.000 por mes (<strong style={{textTransform:"uppercase"}}>CUOTAS FIJAS</strong>) podés pagar tu terreno? (También incluyen alcantarillas y pilar)</>}
               valorSeleccionado={datos.conoceCuota55000}
               onChange={(v) => actualizarCampo("conoceCuota55000", v)}
             />

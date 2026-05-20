@@ -322,23 +322,30 @@ function EntrevistaSelector({
       </p>
 
       <div className="entrevista-selector__modalidades">
-        {MODALIDADES.map(({ valor, etiqueta, icono }) => (
-          <button
-            key={valor}
-            type="button"
-            className={`entrevista-selector__mod-btn${
-              modalidadSeleccionada === valor && !deshabilitado
-                ? " entrevista-selector__mod-btn--sel"
-                : ""
-            }`}
-            onClick={() => onModalidadChange(valor)}
-            disabled={deshabilitado}
-          >
-            <span className="entrevista-selector__mod-icono" aria-hidden="true">
-              {icono}
-            </span>
-            {etiqueta}
-          </button>
+        {MODALIDADES.map(({ valor, etiqueta, icono }, i) => (
+          <>
+            {i > 0 && (
+              <span key={`sep-${i}`} className="entrevista-selector__mod-sep" aria-hidden="true">
+                o
+              </span>
+            )}
+            <button
+              key={valor}
+              type="button"
+              className={`entrevista-selector__mod-btn${
+                modalidadSeleccionada === valor && !deshabilitado
+                  ? " entrevista-selector__mod-btn--sel"
+                  : ""
+              }`}
+              onClick={() => onModalidadChange(valor)}
+              disabled={deshabilitado}
+            >
+              <span className="entrevista-selector__mod-icono" aria-hidden="true">
+                {icono}
+              </span>
+              {etiqueta}
+            </button>
+          </>
         ))}
       </div>
 
