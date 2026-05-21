@@ -10,7 +10,7 @@ function YaRegistradoMessage() {
         <span className="felicidades-card__icono">✓</span>
       </span>
       <h2 className="felicidades-card__titulo">
-        FELICIDADES YA ESTÁS PARTICIPANDO POR EL SORTEO DE LA MOTO
+        Este número de teléfono ya está participando
       </h2>
     </div>
   );

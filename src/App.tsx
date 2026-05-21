@@ -198,6 +198,19 @@ function App() {
     });
   }, [enviado, mensajeYaRegistrado]);
 
+  useLayoutEffect(() => {
+    if (!entrevistaConfirmada) return;
+    const el = document.getElementById("entrevista-confirmada-card");
+    if (!el) return;
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const behavior = prefersReduced ? "auto" : "smooth";
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior, block: "start", inline: "nearest" });
+      });
+    });
+  }, [entrevistaConfirmada]);
+
   const actualizarCampo = <K extends keyof FormData>(campo: K, valor: FormData[K]) => {
     setDatos((prev) => {
       const nuevo = { ...prev, [campo]: valor };
@@ -409,7 +422,7 @@ function App() {
       ) : null}
     </main>
   ) : (
-    <div className="success-card" style={{ maxWidth: 520, margin: "0 auto", width: "100%" }}>
+    <div id="entrevista-confirmada-card" className="success-card" style={{ maxWidth: 520, margin: "0 auto", width: "100%" }}>
       <span className="success-card__icono-wrap" aria-hidden="true">
         <span className="success-card__icono">✓</span>
       </span>

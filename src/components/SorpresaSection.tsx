@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { TEXTOS } from "../data/branding";
 import logoArreglado from "../assets/Logo-Arreglado (1).png";
 
@@ -8,19 +8,11 @@ type Props = {
 };
 
 function SorpresaSection({ masInfoBloque }: Props) {
-  const [visible, setVisible] = useState(false);
   const [descubierto, setDescubierto] = useState(false);
-  const sectionRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setVisible(true), 3000);
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <div
-      ref={sectionRef}
-      className={`pr-surprise${visible ? " visible" : ""}${descubierto ? " revealed" : ""}`}
+      className={`pr-surprise visible${descubierto ? " revealed" : ""}`}
       aria-labelledby="pr-sorpresa-heading"
     >
       {!descubierto && (
@@ -50,12 +42,12 @@ function SorpresaSection({ masInfoBloque }: Props) {
           </div>
         ) : (
           <div className="pr-discount visible">
-            <p className="pr-discount-line" aria-label="Hasta un 40% OFF de descuento">
+            <p className="pr-discount-line" aria-label="Hasta un 40% de descuento">
               <span className="prefix">{TEXTOS.sorpresaDescuentoAntesPct}</span>
               <span className="number">
                 40<span className="pct">%</span>
               </span>
-              <span className="off">OFF</span>
+              <span className="off">de descuento</span>
             </p>
             <p className="pr-discount-sub">
               En productos seleccionados,{" "}

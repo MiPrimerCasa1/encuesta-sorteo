@@ -234,7 +234,7 @@
   margin-left: 2px;
 }
 .pr-discount-line .off {
-  font-size: 52px;
+  font-size: 34px;
   font-weight: 900;
   color: #B71C1C;
   letter-spacing: 0.06em;
@@ -338,8 +338,7 @@
   .pr-surprise-title { font-size: 20px; }
   .pr-inner { padding: 28px 16px 22px; min-height: 200px; }
   .pr-discount-line .number { font-size: 52px; }
-  .pr-discount-line .off { font-size: 40px; }
+  .pr-discount-line .off { font-size: 26px; }
   .pr-discount-line .number .pct { font-size: 36px; }
-  .pr-discount-line .prefix,
-  .pr-discount-line .off { font-size: 16px; }
+  .pr-discount-line .prefix { font-size: 16px; }
 }
