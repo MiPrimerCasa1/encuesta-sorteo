@@ -1,12 +1,13 @@
 // Carga automática: cualquier ganador-YYYY.jpg en src/assets/ es detectado por Vite.
 // Si el archivo no existe, devuelve '' sin romper la app.
 const _ganadoresGlob = import.meta.glob<{ default: string }>(
-  "../assets/ganador-*.{jpg,jpeg}",
+  "../assets/ganador-*.{jpg,jpeg,svg}",
   { eager: true }
 );
 
 function fotoGanador(año: number): string {
   return (
+    _ganadoresGlob[`../assets/ganador-${año}.svg`]?.default ??
     _ganadoresGlob[`../assets/ganador-${año}.jpg`]?.default ??
     _ganadoresGlob[`../assets/ganador-${año}.jpeg`]?.default ??
     ""

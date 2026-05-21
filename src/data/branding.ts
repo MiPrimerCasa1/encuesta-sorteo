@@ -22,7 +22,7 @@ export const TEXTOS = {
   sorpresaTitulo: "Tenemos una sorpresa para ti",
   sorpresaCta: "Toque aquí",
   /** Línea del descuento; el porcentaje se muestra grande en la UI */
-  sorpresaDescuentoAntesPct: "Hasta un ",
+  sorpresaDescuentoAntesPct: "",
   sorpresaDescuentoPct: "40%",
   sorpresaDescuentoDespuesPct: " de descuento",
   sorpresaDescuentoTexto: "En productos seleccionados.",

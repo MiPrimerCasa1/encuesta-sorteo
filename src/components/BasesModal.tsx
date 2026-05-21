@@ -56,7 +56,7 @@ function BasesModal({ onClose }: Props) {
 
           <div className="bases-sheet__seccion">
             <h3 className="bases-sheet__subtitulo">6. Descuento exclusivo</h3>
-            <p>Los participantes acceden a un descuento de <strong>hasta el 40%</strong> en productos seleccionados de MI PRIMER CASA S.A.</p>
+            <p>Los participantes acceden a un descuento de <strong>40%</strong> en productos seleccionados de MI PRIMER CASA S.A.</p>
           </div>
 
           <div className="bases-sheet__seccion">

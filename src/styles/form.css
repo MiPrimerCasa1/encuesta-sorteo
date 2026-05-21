@@ -427,21 +427,6 @@
   box-shadow: 0 0 0 3px rgba(200, 17, 26, 0.12);
 }
 
-/* ── Fila fecha + hora ── */
-
-.entrevista-selector__fecha-hora-fila {
-  display: flex;
-  justify-content: center;
-  gap: var(--espacio-xl);
-}
-
-.entrevista-selector__fecha-hora-fila .entrevista-selector__campo {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 /* ── Hora picker (dropdown) ── */
 
 .hora-picker {
@@ -524,6 +509,13 @@
   border-radius: var(--radio-boton);
   box-shadow: var(--sombra-rojo-fuerte);
   padding: 10px;
+}
+
+.hora-picker__dropdown--full {
+  width: 100%;
+  min-width: 0;
+  margin-top: 0;
+  box-sizing: border-box;
 }
 
 .hora-picker__grid {
@@ -650,7 +642,16 @@
   border: 2px solid var(--color-rojo);
   border-radius: var(--radio-boton);
   box-shadow: var(--sombra-rojo-fuerte);
-  padding: 10px;
+  padding: 16px;
+  min-width: 300px;
+}
+
+/* Variante de ancho completo (cuando el calendario está abierto inline) */
+.fecha-picker__calendar--full {
+  width: 100%;
+  min-width: 0;
+  margin-top: 0;
+  box-sizing: border-box;
 }
 
 .fecha-picker__cal-nav {
@@ -661,7 +662,7 @@
 }
 
 .fecha-picker__cal-mes-titulo {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 800;
   color: var(--color-rojo);
   text-transform: uppercase;
@@ -698,7 +699,7 @@
 }
 
 .fecha-picker__cal-dia-header {
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 800;
   text-align: center;
   color: var(--color-gris-texto);
@@ -723,14 +724,14 @@
 /* Botón de día — estética igual a boton-opcion */
 .fecha-picker__dia-btn {
   aspect-ratio: 1;
-  padding: 2px;
+  padding: 4px;
   background: var(--color-blanco);
   border: 2px solid var(--color-rojo);
   border-radius: var(--radio-boton);
   color: var(--color-rojo);
   font-family: inherit;
   font-weight: 800;
-  font-size: 13px;
+  font-size: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
