@@ -42,12 +42,12 @@ function SorpresaSection({ masInfoBloque }: Props) {
           </div>
         ) : (
           <div className="pr-discount visible">
-            <p className="pr-discount-line" aria-label="Hasta un 40% de descuento">
+            <p className="pr-discount-line" aria-label="40% de Descuento">
               <span className="prefix">{TEXTOS.sorpresaDescuentoAntesPct}</span>
               <span className="number">
                 40<span className="pct">%</span>
               </span>
-              <span className="off">de descuento</span>
+              <span className="off">de Descuento</span>
             </p>
             <p className="pr-discount-sub">
               En productos seleccionados,{" "}
